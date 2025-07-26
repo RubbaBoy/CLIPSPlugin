@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin>
+    <id>org.clips.intellij</id>
+    <name>CLIPS Language Support</name>
+    <vendor email="adam.yarris@biamp.com" url="https://yarr.is/">Adam Yarris</vendor>
+    
+    <depends>com.intellij.modules.platform</depends>
+    
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- File type registration -->
+        <fileType name="CLIPS" 
+                  implementationClass="is.yarr.clips.CLIPSFileType"
+                  fieldName="INSTANCE" 
+                  language="CLIPS" 
+                  extensions="clp"/>
+                  
+        <!-- Syntax highlighting -->
+        <lang.syntaxHighlighterFactory language="CLIPS" 
+                  implementationClass="is.yarr.clips.syntax.CLIPSSyntaxHighlighterFactory"/>
+                  
+        <!-- Parser definition -->
+        <lang.parserDefinition language="CLIPS" 
+                  implementationClass="is.yarr.clips.parser.CLIPSParserDefinition"/>
+                  
+        <!-- Editor features -->
+        <lang.braceMatcher language="CLIPS" 
+                  implementationClass="is.yarr.clips.editor.CLIPSBraceMatcher"/>
+        <quoteHandler className="is.yarr.clips.editor.CLIPSQuoteHandler"
+                  fileType="CLIPS"/>
+                  
+        <!-- Code completion -->
+        <completion.contributor language="CLIPS" 
+                  implementationClass="is.yarr.clips.completion.CLIPSCompletionContributor"/>
+    </extensions>
+</idea-plugin>

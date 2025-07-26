@@ -1,0 +1,146 @@
+plugins {
+    // id 'org.jetbrains.intellij' version '1.17.4' // Replaced with the new plugin
+    id 'org.jetbrains.intellij.platform' version '2.5.0'
+//    id("org.jetbrains.intellij.platform.migration") version "2.6.0"
+
+    id 'java'
+    id 'org.jetbrains.grammarkit' version '2022.3.2.2'
+}
+
+group = 'is.yarr.clips'
+version = '0.1.0'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+//dependencyResolutionManagement {
+//    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+//
+//    repositories {
+//        mavenCentral()
+//
+//        intellijPlatform {
+//            defaultRepositories()
+//        }
+//    }
+//}
+
+dependencies {
+    intellijPlatform {
+        create("IC", "2025.1")
+//        testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
+
+        // Add necessary plugin dependencies for compilation here, example:
+        // bundledPlugin("com.intellij.java")
+    }
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = "251"
+        }
+
+        description = """
+        <p>Basic support for CLIPS (C Language Integrated Production System) expert system language.</p>
+        <p>Features:</p>
+        <ul>
+            <li>Syntax highlighting for .clp files</li>
+            <li>Basic code completion for CLIPS keywords</li>
+            <li>Parentheses matching</li>
+            <li>Quote handling</li>
+        </ul>
+        """
+
+        changeNotes = """
+        <p>Initial release:</p>
+        <ul>
+            <li>Basic syntax highlighting</li>
+            <li>File type recognition for .clp files</li>
+            <li>Simple editor features</li>
+        </ul>
+        """
+    }
+}
+
+java {
+    toolchain {
+        // IntelliJ Platform 2024.2 and later require Java 17
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// Configure IntelliJ Platform plugin using the new 'platform' block
+// See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-migration.html
+//intellijPlatform {
+//    productCode = 'IC' // Community Edition
+//    version = '2024.2'
+//    plugins.set(['com.intellij.java'])
+//
+//    pluginConfiguration {
+//        sinceBuild = "242"
+//        // untilBuild = "252.*" // Optional: specify the upper bound for compatibility
+//
+//        description = """
+//        <p>Basic support for CLIPS (C Language Integrated Production System) expert system language.</p>
+//        <p>Features:</p>
+//        <ul>
+//            <li>Syntax highlighting for .clp files</li>
+//            <li>Basic code completion for CLIPS keywords</li>
+//            <li>Parentheses matching</li>
+//            <li>Quote handling</li>
+//        </ul>
+//        """
+//        changeNotes = """
+//        <p>Initial release:</p>
+//        <ul>
+//            <li>Basic syntax highlighting</li>
+//            <li>File type recognition for .clp files</li>
+//            <li>Simple editor features</li>
+//        </ul>
+//        """
+//    }
+//}
+
+import org.jetbrains.grammarkit.tasks.GenerateLexerTask
+
+// Configure Grammar-Kit plugin
+grammarKit {
+    jflexRelease = '1.7.0-1'
+}
+
+// Task to generate lexer from flex file
+task generateCLIPSLexer(type: GenerateLexerTask) {
+    sourceFile = file("src/main/java/is/yarr/clips/lexer/CLIPSLexer.flex")
+    targetOutputDir = file("src/main/gen/is/yarr/clips/lexer")
+    targetClass = "CLIPSLexerImpl"
+    purgeOldFiles = true
+}
+
+// Make sure the lexer is generated before compilation
+compileJava.dependsOn generateCLIPSLexer
+
+// Add generated sources to source sets
+sourceSets {
+    main {
+        java {
+            srcDirs 'src/main/gen'
+        }
+    }
+}
+
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
