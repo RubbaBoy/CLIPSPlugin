@@ -20,7 +20,7 @@ WHITE_SPACE=({CRLF}|[ \t\f])+
 COMMENT=;.*
 
 // Literals
-STRING=\"([^\\\"]|\\.)*\"
+STRING=\"([^\\\"]|\\.)*\"?
 DIGITS=[0-9]+
 EXPONENT=[eE][+-]?{DIGITS}
 NUMBER=[+-]?({DIGITS}(\.{DIGITS}*)?|\.{DIGITS})({EXPONENT})?
