@@ -8,6 +8,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import is.yarr.clips.lexer.CLIPSLexerAdapter;
+import is.yarr.clips.psi.CLIPSElementTypes;
 import is.yarr.clips.psi.CLIPSTypes;
 import org.jetbrains.annotations.NotNull;
 
@@ -67,27 +68,25 @@ public class CLIPSSyntaxHighlighter extends SyntaxHighlighterBase {
     @NotNull
     @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
-        if (tokenType.equals(CLIPSTypes.COMMENT)) {
+        if (tokenType.equals(CLIPSElementTypes.COMMENT)) {
             return COMMENT_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.KEYWORD)) {
+        } else if (tokenType.equals(CLIPSElementTypes.KEYWORD)) {
             return KEYWORD_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.BUILTIN_FUNCTION)) {
+        } else if (tokenType.equals(CLIPSElementTypes.BUILTIN_FUNCTION)) {
             return BUILTIN_FUNCTION_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.STRING)) {
+        } else if (tokenType.equals(CLIPSElementTypes.STRING)) {
             return STRING_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.NUMBER)) {
+        } else if (tokenType.equals(CLIPSElementTypes.NUMBER)) {
             return NUMBER_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.VARIABLE)) {
+        } else if (tokenType.equals(CLIPSElementTypes.VARIABLE)) {
             return VARIABLE_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.GLOBAL_VARIABLE)) {
+        } else if (tokenType.equals(CLIPSElementTypes.GLOBAL_VARIABLE)) {
             return GLOBAL_VARIABLE_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.MULTIFIELD_VARIABLE)) {
+        } else if (tokenType.equals(CLIPSElementTypes.MULTIFIELD_VARIABLE)) {
             return MULTIFIELD_VARIABLE_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.LPAREN) || tokenType.equals(CLIPSTypes.RPAREN)) {
+        } else if (tokenType.equals(CLIPSElementTypes.LPAREN) || tokenType.equals(CLIPSElementTypes.RPAREN)) {
             return PARENTHESES_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.LBRACKET) || tokenType.equals(CLIPSTypes.RBRACKET)) {
-            return BRACKETS_KEYS;
-        } else if (tokenType.equals(CLIPSTypes.IDENTIFIER)) {
+        } else if (tokenType.equals(CLIPSElementTypes.IDENTIFIER)) {
             return IDENTIFIER_KEYS;
         } else if (tokenType.equals(TokenType.BAD_CHARACTER)) {
             return BAD_CHARACTER_KEYS;

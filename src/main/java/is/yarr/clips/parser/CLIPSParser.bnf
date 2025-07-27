@@ -1,0 +1,118 @@
+// CLIPS Grammar Definition
+// This grammar is based on the CLIPS Reference Manual and is structured
+// to align with the provided Java parser implementation.
+
+{
+  // Meta-information for parser generators like Grammar-Kit
+  parserClass="is.yarr.clips.parser.CLIPSParser"
+  psiClassPrefix="CLIPS"
+  psiImplClassSuffix="Impl"
+  psiPackage="is.yarr.clips.psi"
+  psiImplPackage="is.yarr.clips.psi.impl"
+
+  elementTypeHolderClass="is.yarr.clips.psi.CLIPSElementTypes"
+  elementTypeClass="is.yarr.clips.psi.CLIPSElementType"
+  tokenTypeClass="is.yarr.clips.psi.CLIPSTokenType"
+
+  // Make comments and whitespace non-significant for the grammar rules
+  extends(".*")="is.yarr.clips.psi.impl.CLIPSPsiElementImpl"
+  implements("parameter|variable_element|(.*_construct)")="is.yarr.clips.psi.CLIPSNamedElement"
+
+  tokens=[
+    KEYWORD="KEYWORD"
+    BUILTIN_FUNCTION="BUILTIN_FUNCTION"
+  ]
+}
+
+// The root of a CLIPS file is a sequence of constructs or function calls.
+File ::= item*
+
+private item ::= construct | function_call | COMMENT
+
+// ----------- Basic Types & Expressions -----------
+// These correspond to tokens from CLIPSLexer.flex and CLIPSTypes.java
+constant ::= STRING | NUMBER | IDENTIFIER | "crlf" | "t" | "TRUE" | "FALSE" | "nil"
+variable_element ::= VARIABLE | GLOBAL_VARIABLE | MULTIFIELD_VARIABLE
+
+expression ::= constant | variable_element | function_call
+
+// A function call is a parenthesized list with a function name followed by zero or more expressions
+// A function call can be a special control structure like 'if' or a regular call.
+// The parser will check for the 'if' keyword first to resolve the ambiguity.
+function_call ::= LPAREN (if_guts | regular_function_guts) RPAREN
+
+// The body of an if-then-else construct.
+// Syntax: (if <expression> then <action>* [else <action>*])
+private if_guts ::= "if" expression "then" expression* ("else" expression*)? {
+  pin=1 // Pin after the 'if' keyword to commit to this parsing rule.
+}
+
+// The body of a regular function call.
+private regular_function_guts ::= function_name expression*
+
+// A function name can be an identifier, a built-in, a variable, or a keyword.
+// Keywords like 'and', 'or', 'not' are parsed here. The 'if' keyword is
+// handled by the 'if_guts' rule because of the ordered choice in the 'function_call' rule.
+private function_name ::= IDENTIFIER | BUILTIN_FUNCTION | variable_element | KEYWORD
+
+
+//private function_name ::= IDENTIFIER | BUILTIN_FUNCTION | variable_element
+
+// ----------- Top-Level Constructs -----------
+construct ::= defrule_construct
+            | deftemplate_construct
+            | deffacts_construct
+            | defglobal_construct
+            | deffunction_construct
+            | defmodule_construct
+            | defclass_construct
+
+// ----------- Deftemplate Construct -----------
+// Based on <deftemplate-construct> from the CLIPS Reference Manual [1]
+deftemplate_construct ::= LPAREN "deftemplate" IDENTIFIER [STRING]
+                            slot_definition*
+                          RPAREN
+
+slot_definition ::= single_slot_definition | multislot_definition
+
+private single_slot_definition ::= LPAREN "slot" IDENTIFIER template_attribute* RPAREN
+private multislot_definition ::= LPAREN "multislot" IDENTIFIER template_attribute* RPAREN
+private template_attribute ::= LPAREN ("default" | "default-dynamic") expression* RPAREN // Simplified
+
+// ----------- Defrule Construct -----------
+// Based on <defrule-construct> from the CLIPS Reference Manual [1]
+defrule_construct ::= LPAREN "defrule" IDENTIFIER [STRING]
+                        [declaration]
+                        conditional_element*
+                        "=>"
+                        action*
+                      RPAREN
+
+private declaration ::= LPAREN "declare" rule_property+ RPAREN
+private rule_property ::= LPAREN "salience" NUMBER RPAREN // Simplified
+
+private conditional_element ::= pattern_ce | test_ce // Simplified, others include and, or, not, etc. [1]
+private pattern_ce ::= LPAREN IDENTIFIER expression* RPAREN // Simplified pattern
+private test_ce ::= LPAREN "test" expression RPAREN
+private action ::= expression
+
+// ----------- Other Constructs -----------
+deffacts_construct ::= LPAREN "deffacts" IDENTIFIER [STRING] rhs_pattern* RPAREN
+private rhs_pattern ::= LPAREN IDENTIFIER expression* RPAREN
+
+deffunction_construct ::= LPAREN "deffunction" IDENTIFIER [STRING]
+                            LPAREN parameter_list [MULTIFIELD_VARIABLE] RPAREN
+                            action*
+                          RPAREN
+parameter ::= VARIABLE
+parameter_list ::= parameter*
+
+defglobal_construct ::= LPAREN "defglobal" [IDENTIFIER] defglobal_assignment* RPAREN
+private defglobal_assignment ::= GLOBAL_VARIABLE "=" expression
+
+defmodule_construct ::= LPAREN "defmodule" IDENTIFIER [STRING] RPAREN
+
+defclass_construct ::= LPAREN "defclass" IDENTIFIER [STRING]
+                         ["is-a" IDENTIFIER+]
+                         slot_definition*
+                       RPAREN

@@ -4,6 +4,7 @@ import com.intellij.lang.BracePair;
 import com.intellij.lang.PairedBraceMatcher;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
+import is.yarr.clips.psi.CLIPSElementTypes;
 import is.yarr.clips.psi.CLIPSTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CLIPSBraceMatcher implements PairedBraceMatcher {
     private static final BracePair[] PAIRS = new BracePair[]{
-            new BracePair(CLIPSTypes.LPAREN, CLIPSTypes.RPAREN, true),
-            new BracePair(CLIPSTypes.LBRACKET, CLIPSTypes.RBRACKET, true)
+            new BracePair(CLIPSElementTypes.LPAREN, CLIPSElementTypes.RPAREN, true)
+//            new BracePair(CLIPSElementTypes.LBRACKET, CLIPSElementTypes.RBRACKET, true)
     };
 
     @Override

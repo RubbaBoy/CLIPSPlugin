@@ -9,10 +9,12 @@ import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import is.yarr.clips.CLIPSLanguage;
 import is.yarr.clips.lexer.CLIPSLexerAdapter;
+import is.yarr.clips.psi.CLIPSElementTypes;
 import is.yarr.clips.psi.CLIPSFile;
 import is.yarr.clips.psi.CLIPSTypes;
 import org.jetbrains.annotations.NotNull;
@@ -23,8 +25,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CLIPSParserDefinition implements ParserDefinition {
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
-    public static final TokenSet COMMENTS = TokenSet.create(CLIPSTypes.COMMENT);
-    public static final TokenSet STRING_LITERALS = TokenSet.create(CLIPSTypes.STRING);
+    public static final TokenSet COMMENTS = TokenSet.create(CLIPSElementTypes.COMMENT);
+    public static final TokenSet STRING_LITERALS = TokenSet.create(CLIPSElementTypes.STRING);
 
     public static final IFileElementType FILE = new IFileElementType(CLIPSLanguage.INSTANCE);
 
@@ -65,11 +67,65 @@ public class CLIPSParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public PsiElement createElement(ASTNode node) {
-        return CLIPSTypes.Factory.createElement(node);
+        System.out.println("Creating element for node: " + node.getElementType().getDebugName());
+        return CLIPSElementTypes.Factory.createElement(node);
     }
 
     @Override
     public @NotNull PsiFile createFile(@NotNull FileViewProvider viewProvider) {
-        return new CLIPSFile(viewProvider);
+        var clipsFile = new CLIPSFile(viewProvider);
+        printPSITree(clipsFile);
+        return clipsFile;
     }
+
+    @Override
+    public @NotNull SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode left, ASTNode right) {
+        return SpaceRequirements.MAY;
+    }
+
+    public static void printPSITree(@NotNull PsiFile file) {
+        System.out.println("PSI Tree for file: " + file.getName());
+        System.out.println("--------------------------------------------");
+        printPSIElement(file, 0);
+        System.out.println("--------------------------------------------");
+    }
+
+    /**
+     * Prints a PSI element and its children recursively.
+     *
+     * @param element The element to print
+     * @param depth   Current depth in the tree (for indentation)
+     */
+    private static void printPSIElement(@NotNull PsiElement element, int depth) {
+        StringBuilder indent = new StringBuilder();
+        for (int i = 0; i < depth; i++) {
+            indent.append("  ");
+        }
+
+        String elementInfo = getElementInfo(element);
+        System.out.println(indent + elementInfo);
+
+        for (PsiElement child : element.getChildren()) {
+            printPSIElement(child, depth + 1);
+        }
+    }
+
+    /**
+     * Gets formatted information about a PSI element.
+     *
+     * @param element The element to get information for
+     * @return A string containing element type and text (if a leaf)
+     */
+    @NotNull
+    private static String getElementInfo(@NotNull PsiElement element) {
+        String className = element.getClass().getSimpleName();
+        String elementType = element.getNode().getElementType().toString();
+
+        if (element instanceof LeafPsiElement) {
+            return className + "[" + elementType + "] = '" + element.getText() + "'";
+        } else {
+            return className + "[" + elementType + "]";
+        }
+    }
+
 }

@@ -31,5 +31,21 @@
         <!-- Code completion -->
         <completion.contributor language="CLIPS" 
                   implementationClass="is.yarr.clips.completion.CLIPSCompletionContributor"/>
+                  
+        <!-- Reference resolution -->
+        <psi.referenceContributor language="CLIPS"
+                  implementation="is.yarr.clips.psi.CLIPSReferenceContributor"/>
+                  
+        <!-- Variable highlighting -->
+        <annotator language="CLIPS"
+                  implementationClass="is.yarr.clips.editor.CLIPSAnnotator"/>
+                  
+        <!-- Click-based highlighting -->
+        <highlightUsagesHandlerFactory 
+                  implementation="is.yarr.clips.editor.CLIPSHighlightUsagesHandlerFactory"/>
+                  
+        <!-- Ctrl+click navigation -->
+        <gotoDeclarationHandler 
+                  implementation="is.yarr.clips.editor.CLIPSGotoDeclarationHandler"/>
     </extensions>
 </idea-plugin>

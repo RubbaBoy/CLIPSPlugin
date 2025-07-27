@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.highlighter.HighlighterIterator;
 import com.intellij.psi.tree.IElementType;
+import is.yarr.clips.psi.CLIPSElementTypes;
 import is.yarr.clips.psi.CLIPSTypes;
 
 /**
@@ -14,7 +15,7 @@ import is.yarr.clips.psi.CLIPSTypes;
  */
 public class CLIPSQuoteHandler extends SimpleTokenSetQuoteHandler {
     public CLIPSQuoteHandler() {
-        super(CLIPSTypes.STRING);
+        super(CLIPSElementTypes.STRING);
     }
 
     /**
@@ -28,7 +29,7 @@ public class CLIPSQuoteHandler extends SimpleTokenSetQuoteHandler {
         if (offset < text.length() && text.charAt(offset) == '"') {
             // Check if we're not inside a string token
             IElementType tokenType = iterator.getTokenType();
-            if (tokenType != CLIPSTypes.STRING) {
+            if (tokenType != CLIPSElementTypes.STRING) {
                 return true;
             }
 
@@ -47,7 +48,7 @@ public class CLIPSQuoteHandler extends SimpleTokenSetQuoteHandler {
     public boolean isClosingQuote(HighlighterIterator iterator, int offset) {
         final IElementType tokenType = iterator.getTokenType();
 
-        if (tokenType == CLIPSTypes.STRING) {
+        if (tokenType == CLIPSElementTypes.STRING) {
             int start = iterator.getStart();
             int end = iterator.getEnd();
 
@@ -67,7 +68,7 @@ public class CLIPSQuoteHandler extends SimpleTokenSetQuoteHandler {
         Document document = editor.getDocument();
         CharSequence text = document.getCharsSequence();
         
-        if (iterator.getTokenType() == CLIPSTypes.STRING) {
+        if (iterator.getTokenType() == CLIPSElementTypes.STRING) {
             // Check if the current character is a quote
             if (offset < text.length() && text.charAt(offset) == '"') {
                 // Check if it's escaped

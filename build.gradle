@@ -109,6 +109,7 @@ java {
 //}
 
 import org.jetbrains.grammarkit.tasks.GenerateLexerTask
+import org.jetbrains.grammarkit.tasks.GenerateParserTask
 
 // Configure Grammar-Kit plugin
 grammarKit {
@@ -123,8 +124,29 @@ task generateCLIPSLexer(type: GenerateLexerTask) {
     purgeOldFiles = true
 }
 
+task generateCLIPSParser(type: GenerateParserTask) {
+    // point at your .bnf file
+    sourceFile = file("src/main/java/is/yarr/clips/parser/CLIPSParser.bnf")
+
+    // where to dump the generated java files
+//    targetOutputDir = file("$buildDir/generated")
+    targetRootOutputDir = file("src/main/gen")
+
+    // fully-qualified path (under targetRoot) for the Parser
+    pathToParser = "is/yarr/clips/parser/CLIPSParser.java"
+
+    // fully-qualified path (under targetRoot) for the PSI package
+    pathToPsiRoot = "is/yarr/clips/psi"
+
+    // clean out old files each time
+    purgeOldFiles = true
+}
+
+
 // Make sure the lexer is generated before compilation
 compileJava.dependsOn generateCLIPSLexer
+compileJava.dependsOn(generateCLIPSParser)
+
 
 // Add generated sources to source sets
 sourceSets {
