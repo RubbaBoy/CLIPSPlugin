@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <idea-plugin>
-    <id>org.clips.intellij</id>
+    <id>is.yarr.clips</id>
     <name>CLIPS Language Support</name>
     <vendor email="adam.yarris@biamp.com" url="https://yarr.is/">Adam Yarris</vendor>
     

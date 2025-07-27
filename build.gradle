@@ -1,8 +1,5 @@
 plugins {
-    // id 'org.jetbrains.intellij' version '1.17.4' // Replaced with the new plugin
     id 'org.jetbrains.intellij.platform' version '2.5.0'
-//    id("org.jetbrains.intellij.platform.migration") version "2.6.0"
-
     id 'java'
     id 'org.jetbrains.grammarkit' version '2022.3.2.2'
 }
@@ -19,25 +16,9 @@ repositories {
     }
 }
 
-//dependencyResolutionManagement {
-//    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
-//
-//    repositories {
-//        mavenCentral()
-//
-//        intellijPlatform {
-//            defaultRepositories()
-//        }
-//    }
-//}
-
 dependencies {
     intellijPlatform {
         create("IC", "2025.1")
-//        testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
-
-        // Add necessary plugin dependencies for compilation here, example:
-        // bundledPlugin("com.intellij.java")
     }
 }
 
@@ -53,15 +34,15 @@ intellijPlatform {
         <ul>
             <li>Syntax highlighting for .clp files</li>
             <li>Basic code completion for CLIPS keywords</li>
-            <li>Parentheses matching</li>
-            <li>Quote handling</li>
+            <li>Same-scope variable highlighting</li>
+            <li>Go-to-definitions for local variables</li>
         </ul>
         """
 
         changeNotes = """
         <p>Initial release:</p>
         <ul>
-            <li>Basic syntax highlighting</li>
+            <li>Syntax highlighting</li>
             <li>File type recognition for .clp files</li>
             <li>Simple editor features</li>
         </ul>
@@ -71,42 +52,9 @@ intellijPlatform {
 
 java {
     toolchain {
-        // IntelliJ Platform 2024.2 and later require Java 17
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
-
-// Configure IntelliJ Platform plugin using the new 'platform' block
-// See: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-migration.html
-//intellijPlatform {
-//    productCode = 'IC' // Community Edition
-//    version = '2024.2'
-//    plugins.set(['com.intellij.java'])
-//
-//    pluginConfiguration {
-//        sinceBuild = "242"
-//        // untilBuild = "252.*" // Optional: specify the upper bound for compatibility
-//
-//        description = """
-//        <p>Basic support for CLIPS (C Language Integrated Production System) expert system language.</p>
-//        <p>Features:</p>
-//        <ul>
-//            <li>Syntax highlighting for .clp files</li>
-//            <li>Basic code completion for CLIPS keywords</li>
-//            <li>Parentheses matching</li>
-//            <li>Quote handling</li>
-//        </ul>
-//        """
-//        changeNotes = """
-//        <p>Initial release:</p>
-//        <ul>
-//            <li>Basic syntax highlighting</li>
-//            <li>File type recognition for .clp files</li>
-//            <li>Simple editor features</li>
-//        </ul>
-//        """
-//    }
-//}
 
 import org.jetbrains.grammarkit.tasks.GenerateLexerTask
 import org.jetbrains.grammarkit.tasks.GenerateParserTask
@@ -129,7 +77,6 @@ task generateCLIPSParser(type: GenerateParserTask) {
     sourceFile = file("src/main/java/is/yarr/clips/parser/CLIPSParser.bnf")
 
     // where to dump the generated java files
-//    targetOutputDir = file("$buildDir/generated")
     targetRootOutputDir = file("src/main/gen")
 
     // fully-qualified path (under targetRoot) for the Parser
