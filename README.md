@@ -8,6 +8,23 @@ An example of syntax highlighting:
 
 ![](screenshots/highlight.png)
 
+## What is CLIPS?
+
+
+CLIPS (C Language Integrated Production System) is a powerful, rule-based programming language developed by NASA, primarily used for building expert systems. It allows developers to model knowledge and logic using a declarative, heuristic approach rather than a traditional algorithmic one. In CLIPS, you define a set of rules, and its inference engine determines which rules to fire based on the current facts, making it highly effective for complex decision-making tasks.
+
+For example, a simple rule to monitor a temperature might look like this:
+
+```clp
+(defrule temperature-is-high
+   ?f <- (temperature-reading (value ?t&:(> ?t 90)))
+   =>
+   (printout t "Warning: Temperature is high at " ?t " degrees!" crlf)
+   (assert (overheating-status active)))
+```
+
+CLIPS has its own dedicated [IDE](https://sourceforge.net/projects/clipsrules/files/CLIPS/6.40/), however when it's being integrated with a larger project, native support in an existing IDE is extremely helpful.
+
 ## Installation
 
 ### Manual Installation
