@@ -151,7 +151,19 @@ defglobal_construct ::= LPAREN "defglobal" [IDENTIFIER] defglobal_assignment* RP
 global_variable_def ::= GLOBAL_VARIABLE
 private defglobal_assignment ::= global_variable_def "=" expression
 
-defmodule_construct ::= LPAREN "defmodule" IDENTIFIER [STRING] RPAREN
+defmodule_construct ::= LPAREN "defmodule" def_name comment? port_specification* RPAREN
+
+private port_specification ::= LPAREN (import_spec | export_spec) RPAREN
+
+import_spec ::= "import" def_name port_item
+export_spec ::= "export" port_item
+
+// A port item can be a wildcard (?ALL, ?NONE), or a construct type followed by a wildcard or one or more names.
+private port_item ::= variable_element | (port_construct_type (variable_element | def_name+))
+
+// The types of constructs that can be imported/exported.
+private port_construct_type ::= "deftemplate" | "defclass" | "defglobal" | "deffunction" | "defgeneric"
+
 
 defclass_construct ::= LPAREN "defclass" IDENTIFIER [STRING]
                          ["is-a" def_name+]

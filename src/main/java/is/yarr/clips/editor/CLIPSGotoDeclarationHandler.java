@@ -43,7 +43,11 @@ public class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler {
                 type == CLIPSElementTypes.GLOBAL_VARIABLE) {
                 
                 // Extract the variable name
-                String variableName = CLIPSPsiImplUtil.extractVariableName(leafElement.getText());
+                var variableName = CLIPSPsiImplUtil.extractVariableName(leafElement.getText());
+
+                if (variableName.equals("ALL") || variableName.equals("NONE")) {
+                    return null;
+                }
 //                String variableName = leafElement.getText();
 
                 // Check if it's a global variable
