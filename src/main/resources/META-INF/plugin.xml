@@ -47,5 +47,8 @@
         <!-- Ctrl+click navigation -->
         <gotoDeclarationHandler 
                   implementation="is.yarr.clips.editor.CLIPSGotoDeclarationHandler"/>
+
+        <extendWordSelectionHandler order="first" implementation="is.yarr.clips.editor.CLIPSExtendWordSelectioner"/>
+        <editorActionHandler order="first" action="EditorSelectWord" implementationClass="is.yarr.clips.editor.CLIPSSelectWordHandlerFactory"/>
     </extensions>
 </idea-plugin>
