@@ -8,6 +8,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import is.yarr.clips.psi.CLIPSElementTypes;
+import is.yarr.clips.psi.CLIPSGlobalVariableDef;
 import is.yarr.clips.psi.CLIPSNamedElement;
 import is.yarr.clips.psi.CLIPSParameter;
 import is.yarr.clips.psi.CLIPSPsiImplUtil;
@@ -88,9 +89,15 @@ public class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler {
         
         // Find all defglobal elements in the file
         for (PsiElement child : file.getChildren()) {
-            if (child.getNode().getElementType() == CLIPSElementTypes.DEFGLOBAL_CONSTRUCT) {
-                // Found a defglobal block, now search for the variable declaration
-                findGlobalVariableInDefglobal(child, variableName, declarations);
+            System.out.println("Looking at child: " + child.getNode().getElementType() + " - " + child.getText());
+            if (child.getNode().getElementType() == CLIPSElementTypes.CONSTRUCT) {
+                var firstChild = child.getFirstChild();
+                System.out.println("First child: " + (firstChild != null ? firstChild.getNode().getElementType() : "null"));
+                if (firstChild != null && firstChild.getNode().getElementType() == CLIPSElementTypes.DEFGLOBAL_CONSTRUCT) {
+                    System.out.println("Found defglobal construct: " + child.getText());
+                    // Found a defglobal block, now search for the variable declaration
+                    findGlobalVariableInDefglobal(firstChild, variableName, declarations);
+                }
             }
         }
         
@@ -112,13 +119,13 @@ public class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler {
     private void findGlobalVariableInDefglobal(PsiElement defglobal, String variableName, List<PsiElement> declarations) {
         // Iterate through all children of the defglobal element
         for (PsiElement child : defglobal.getChildren()) {
-            if (child instanceof LeafPsiElement leafElement) {
-                if (leafElement.getElementType() == CLIPSElementTypes.GLOBAL_VARIABLE) {
-                    String currentVarName = CLIPSPsiImplUtil.extractVariableName(leafElement.getText());
-                    if (variableName.equals(currentVarName)) {
-                        // Found the variable declaration
-                        declarations.add(leafElement);
-                    }
+            System.out.println("\tchild: " + child.getNode().getElementType() + " - " + child.getText());
+            if (child instanceof CLIPSGlobalVariableDef globalVariableDef) {
+                String currentVarName = globalVariableDef.getName();
+                System.out.println("\t\tChecking variable: " + currentVarName + " == " + variableName);
+                if (variableName.equals(currentVarName)) {
+                    // Found the variable declaration
+                    declarations.add(child);
                 }
             }
         }

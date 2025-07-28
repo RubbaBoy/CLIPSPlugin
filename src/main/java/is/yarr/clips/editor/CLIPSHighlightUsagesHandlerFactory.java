@@ -26,8 +26,6 @@ public class CLIPSHighlightUsagesHandlerFactory implements HighlightUsagesHandle
         int offset = editor.getCaretModel().getOffset();
         PsiElement element = file.findElementAt(offset);
         
-        System.out.println("Creating highlight usages handler for element: " + (element != null ? (element.getText() + "  - " + element.getClass().getCanonicalName()) : "null"));
-        
         // Check if the element is a CLIPS variable
         if (element instanceof CLIPSVariableElementImpl variableElement) {
             return new CLIPSHighlightUsagesHandler(editor, file, variableElement);

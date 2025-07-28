@@ -52,11 +52,11 @@ public class CLIPSHighlightUsagesHandler extends HighlightUsagesHandlerBase<PsiE
             return;
         }
 
-        System.out.println("[DEBUG_LOG] Finding occurrences of variable: " + variableName);
+//        System.out.println("[DEBUG_LOG] Finding occurrences of variable: " + variableName);
 
         // Check if the variable is global
         boolean isGlobal = isGlobalVariable(myVariable);
-        System.out.println("[DEBUG_LOG] Is global variable: " + isGlobal);
+//        System.out.println("[DEBUG_LOG] Is global variable: " + isGlobal);
 
         // Find all occurrences of the variable in the file
         PsiFile file = myVariable.getContainingFile();
@@ -67,14 +67,14 @@ public class CLIPSHighlightUsagesHandler extends HighlightUsagesHandlerBase<PsiE
         } else {
             // For local variables, find the containing block and only highlight occurrences within that block
             PsiElement containingBlock = findContainingBlock(myVariable);
-            System.out.println("[DEBUG_LOG] Containing block: " + (containingBlock != null ? containingBlock.getText() : "null"));
+//            System.out.println("[DEBUG_LOG] Containing block: " + (containingBlock != null ? containingBlock.getText() : "null"));
 
             if (containingBlock != null) {
                 // Only highlight occurrences within the containing block
                 findVariableOccurrences(containingBlock, variableName, containingBlock);
             } else {
                 // If we couldn't find a containing block, fall back to highlighting all occurrences
-                System.out.println("[DEBUG_LOG] Couldn't find containing block, highlighting all occurrences");
+//                System.out.println("[DEBUG_LOG] Couldn't find containing block, highlighting all occurrences");
                 findVariableOccurrences(file, variableName, null);
             }
         }
@@ -281,7 +281,6 @@ public class CLIPSHighlightUsagesHandler extends HighlightUsagesHandlerBase<PsiE
         // Check if the current element is a variable we are looking for.
         if (element instanceof CLIPSNamedElement named) {
             String currentVariableName = named.getName();
-            System.out.println("[DEBUG_LOG] Checking element: " + currentVariableName + " == " + variableName);
             if (variableName.equals(currentVariableName)) {
                 addOccurrence(element);
             }

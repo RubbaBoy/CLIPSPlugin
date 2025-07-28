@@ -16,7 +16,7 @@
 
   // Make comments and whitespace non-significant for the grammar rules
   extends(".*")="is.yarr.clips.psi.impl.CLIPSPsiElementImpl"
-  implements("parameter|variable_element|(.*_construct)")="is.yarr.clips.psi.CLIPSNamedElement"
+  implements("parameter|variable_element|global_variable_def|(.*_construct)")="is.yarr.clips.psi.CLIPSNamedElement"
 
   tokens=[
     KEYWORD="KEYWORD"
@@ -108,7 +108,8 @@ parameter ::= VARIABLE
 parameter_list ::= parameter*
 
 defglobal_construct ::= LPAREN "defglobal" [IDENTIFIER] defglobal_assignment* RPAREN
-private defglobal_assignment ::= GLOBAL_VARIABLE "=" expression
+global_variable_def ::= GLOBAL_VARIABLE
+private defglobal_assignment ::= global_variable_def "=" expression
 
 defmodule_construct ::= LPAREN "defmodule" IDENTIFIER [STRING] RPAREN
 
