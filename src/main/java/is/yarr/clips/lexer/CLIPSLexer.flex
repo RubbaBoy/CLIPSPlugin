@@ -40,15 +40,9 @@ VARIABLE=\?{VAR_SYMBOL}
 // Keywords
 ALL_KEYWORDS=defrule|deftemplate|deffacts|deffunction|defmodule|defglobal|defclass|definstances|defmessage-handler|defgeneric|defmethod|import|slot|multislot|declare|salience|auto-focus|and|or|not|test|exists|forall|logical|if|then|else|crlf|t|TRUE|FALSE|nil|type
 
-// Built-in functions, operators, and special symbols (including wildcards)
-//BUILTIN_SYMBOLS=(assert|retract|modify|duplicate|printout|bind|exit|halt|clear|reset|watch|unwatch|agenda|facts|rules|run|gensym|length(\$)?|=>|<-|[~&|\^]|=|<>|!=|<|>|<=|>=|\+|-|\*|\/|eq|neq)
-//BUILTIN_SYMBOLS=assert|retract|modify|duplicate|printout|bind|exit|halt|clear|reset|watch|unwatch|agenda|facts|rules|run|gensym|length(\$)?|=>|<-|[~&|\^]|=|<>|!=|<|>|<=|>=|\+|-|\/|eq|neq
-
+// Built-in functions, operators, and some special symbols
 BUILTIN_FUNCTION =
     // Control Flow Functions
-//    "if" |
-//    "then" |
-//    "else" |
     "while" |
     "loop-for-count" |
     "return" |
@@ -135,7 +129,7 @@ BUILTIN_FUNCTION =
     "gensym" |
     "=>" |
     "<-" |
-    [~&|\^] |  // Note: This matches a single character: ~, &, |, or ^
+    [~&|\^:] |  // Note: This matches a single character: ~, &, |, or ^ // TODO: Remove?
     "=" |
     "<>" |
     "!=" |
@@ -150,22 +144,16 @@ BUILTIN_FUNCTION =
     "eq" |
     "neq"
 
-
-// Delimiters
-//LPAREN=\(
-//RPAREN=\)
-//LBRACKET=\[
-//RBRACKET=\]
-
-// Single character tokens that could be variable prefixes
-QUESTION_MARK=\?
-DOLLAR_QUESTION_MARK=\$\?
+AMPERSAND="&"
+PIPE="|"
+TILDE="~"
+COLON=":"
+MULTIFIELD_WILDCARD="$?"
+WILDCARD="?"
 
 // Delimiters
 LPAREN="("
 RPAREN=")"
-LBRACKET="["
-RBRACKET="]"
 
 %%
 
@@ -177,6 +165,10 @@ RBRACKET="]"
   {STRING}             { return CLIPSElementTypes.STRING; }
   {NUMBER}             { return CLIPSElementTypes.NUMBER; }
 
+  {AMPERSAND}          { return CLIPSElementTypes.AMPERSAND; }
+  {PIPE}               { return CLIPSElementTypes.PIPE; }
+  {TILDE}              { return CLIPSElementTypes.TILDE; }
+  {COLON}              { return CLIPSElementTypes.COLON; }
   {LPAREN}             { return CLIPSElementTypes.LPAREN; }
   {RPAREN}             { return CLIPSElementTypes.RPAREN; }
 //  {LBRACKET}           { return CLIPSElementTypes.LBRACKET; }
@@ -190,13 +182,15 @@ RBRACKET="]"
 
   // Variables must be matched before their prefixes ('?' and '$?') become standalone tokens.
   // Order is crucial to match longest variant first.
-  {MULTIFIELD_VARIABLE} { return CLIPSElementTypes.MULTIFIELD_VARIABLE; }
-  {GLOBAL_VARIABLE}    { return CLIPSElementTypes.GLOBAL_VARIABLE; }
-  {VARIABLE}           { return CLIPSElementTypes.VARIABLE; }
+  {MULTIFIELD_VARIABLE}  { return CLIPSElementTypes.MULTIFIELD_VARIABLE; }
+  {GLOBAL_VARIABLE}       { return CLIPSElementTypes.GLOBAL_VARIABLE; }
+  {VARIABLE}              { return CLIPSElementTypes.VARIABLE; }
+  {MULTIFIELD_WILDCARD}   { return CLIPSElementTypes.MULTIFIELD_WILDCARD; }
+  {WILDCARD}              { return CLIPSElementTypes.WILDCARD; }
 
   // Now match the standalone '?' and '$?' wildcards/tokens
-  {DOLLAR_QUESTION_MARK} { return CLIPSElementTypes.BUILTIN_FUNCTION; }
-  {QUESTION_MARK}      { return CLIPSElementTypes.BUILTIN_FUNCTION; }
+//  {DOLLAR_QUESTION_MARK} { return CLIPSElementTypes.BUILTIN_FUNCTION; }
+//  {QUESTION_MARK}      { return CLIPSElementTypes.BUILTIN_FUNCTION; }
 
   // General symbols (identifiers) are matched as a fallback.
   {SYMBOL}             { return CLIPSElementTypes.IDENTIFIER; }

@@ -21,6 +21,12 @@
   tokens=[
     KEYWORD="KEYWORD"
     BUILTIN_FUNCTION="BUILTIN_FUNCTION"
+    AMPERSAND="AMPERSAND"
+    PIPE="PIPE"
+    TILDE="TILDE"
+    COLON="COLON"
+    MULTIFIELD_WILDCARD="MULTIFIELD_WILDCARD"
+    WILDCARD="WILDCARD"
   ]
 }
 
@@ -36,7 +42,39 @@ variable_element ::= VARIABLE | GLOBAL_VARIABLE | MULTIFIELD_VARIABLE
 
 def_name ::= IDENTIFIER  // The name of some construct def*
 
+// Start expressions
+
 expression ::= constant | variable_element | function_call
+
+// ----------- Constraints -----------
+// This section implements field constraints for use in rule patterns (LHS).
+// The rules are structured to enforce CLIPS operator precedence: ~ (highest), & (middle), | (lowest).
+
+// A constraint is the top-level element used within a pattern field.
+// This would be used inside a pattern, e.g., (my-template (my-slot <constraint>))
+constraint ::= or_constraint
+
+// The '|' (OR) connective has the lowest precedence.
+private or_constraint ::= and_constraint (PIPE and_constraint)*
+
+// The '&' (AND) connective has medium precedence.
+private and_constraint ::= not_constraint (AMPERSAND not_constraint)*
+
+// The '~' (NOT) connective has the highest precedence.
+private not_constraint ::= TILDE? single_field_constraint
+
+// A predicate constraint is a function call prefixed by ':' that must evaluate to TRUE.
+predicate_constraint ::= COLON function_call
+
+// A single_field_constraint is the fundamental atom of a constraint expression.
+private single_field_constraint ::=
+  constant
+  | variable_element
+  | predicate_constraint
+  | WILDCARD
+  | MULTIFIELD_WILDCARD
+
+// End expressions
 
 // A function call is a parenthesized list with a function name followed by zero or more expressions
 // A function call can be a special control structure like 'if' or a regular call.
@@ -125,16 +163,28 @@ defrule_construct ::= LPAREN "defrule" IDENTIFIER [STRING]
                         [declaration]
                         conditional_element*
                         "=>"
-                        action*
+                        rhs_action*
                       RPAREN
 
 private declaration ::= LPAREN "declare" rule_property+ RPAREN
-private rule_property ::= LPAREN "salience" NUMBER RPAREN // Simplified
+private rule_property ::= LPAREN "salience" expression RPAREN
+                      | LPAREN "auto-focus" ("TRUE" | "FALSE") RPAREN
 
 private conditional_element ::= pattern_ce | test_ce // Simplified, others include and, or, not, etc. [1]
-private pattern_ce ::= LPAREN def_name expression* RPAREN // Simplified pattern
 private test_ce ::= LPAREN "test" expression RPAREN
-private action ::= expression
+private pattern_ce ::= ordered_pattern_CE | template_pattern_CE
+
+// An ordered pattern, e.g., (sensor-reading high ?value).
+private ordered_pattern_CE ::= LPAREN def_name constraint* RPAREN
+
+// A template pattern, e.g., (system-info (cpu-usage ?c) (temp ?t&:(> ?t 90))).
+private template_pattern_CE ::= LPAREN def_name template_slot_pattern+ RPAREN
+private template_slot_pattern ::= LPAREN def_name constraint* RPAREN
+
+// An action on the Right-Hand Side (RHS) of a rule is any valid expression.
+private rhs_action ::= expression
+
+// End defrule_construct
 
 // ----------- Other Constructs -----------
 deffacts_construct ::= LPAREN "deffacts" IDENTIFIER [STRING] deffacts_rhs_pattern* RPAREN
@@ -142,7 +192,7 @@ deffacts_rhs_pattern ::= LPAREN def_name expression* RPAREN
 
 deffunction_construct ::= LPAREN "deffunction" IDENTIFIER [STRING]
                             LPAREN parameter_list [MULTIFIELD_VARIABLE] RPAREN
-                            action*
+                            rhs_action*
                           RPAREN
 parameter ::= VARIABLE
 parameter_list ::= parameter*
