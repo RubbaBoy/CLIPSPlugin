@@ -38,7 +38,7 @@ MULTIFIELD_VARIABLE=\$\?{VAR_SYMBOL}
 VARIABLE=\?{VAR_SYMBOL}
 
 // Keywords
-ALL_KEYWORDS=defrule|deftemplate|deffacts|deffunction|defmodule|defglobal|defclass|definstances|defmessage-handler|defgeneric|defmethod|slot|multislot|declare|salience|auto-focus|and|or|not|test|exists|forall|logical|if|then|else|crlf|t|TRUE|FALSE|nil
+ALL_KEYWORDS=defrule|deftemplate|deffacts|deffunction|defmodule|defglobal|defclass|definstances|defmessage-handler|defgeneric|defmethod|slot|multislot|declare|salience|auto-focus|and|or|not|test|exists|forall|logical|if|then|else|crlf|t|TRUE|FALSE|nil|type
 
 // Built-in functions, operators, and special symbols (including wildcards)
 //BUILTIN_SYMBOLS=(assert|retract|modify|duplicate|printout|bind|exit|halt|clear|reset|watch|unwatch|agenda|facts|rules|run|gensym|length(\$)?|=>|<-|[~&|\^]|=|<>|!=|<|>|<=|>=|\+|-|\*|\/|eq|neq)

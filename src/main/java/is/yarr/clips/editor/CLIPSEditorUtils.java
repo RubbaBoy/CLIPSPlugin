@@ -1,6 +1,8 @@
 package is.yarr.clips.editor;
 
+import com.esotericsoftware.kryo.kryo5.util.Null;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
 import is.yarr.clips.psi.CLIPSElementTypes;
 import org.jetbrains.annotations.Nullable;
@@ -34,5 +36,9 @@ public class CLIPSEditorUtils {
         // Should this be merged in from all usages?
         return fallback.apply(variable);
     }
+
+//    public static @Nullable PsiElement findDefinedTemplate(PsiFile file, String name) {
+//
+//    }
 
 }

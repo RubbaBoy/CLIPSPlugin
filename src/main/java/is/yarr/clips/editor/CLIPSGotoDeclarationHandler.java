@@ -45,8 +45,7 @@ public class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler {
                 // Extract the variable name
                 String variableName = CLIPSPsiImplUtil.extractVariableName(leafElement.getText());
 //                String variableName = leafElement.getText();
-                System.out.println("[DEBUG_LOG] Looking for declaration of variable: " + variableName);
-                
+
                 // Check if it's a global variable
                 boolean isGlobal = type == CLIPSElementTypes.GLOBAL_VARIABLE;
 
@@ -58,14 +57,12 @@ public class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler {
                 } else {
                     // For local variables, find the containing block and only highlight occurrences within that block
                     PsiElement containingBlock = findContainingBlock(sourceElement);
-                    System.out.println("[DEBUG_LOG] Containing block: " + (containingBlock != null ? containingBlock.getText() : "null"));
 
                     if (containingBlock != null) {
                         // Only highlight occurrences within the containing block
                         return findLocalVariableDeclaration(containingBlock, variableName, containingBlock);
                     } else {
                         // If we couldn't find a containing block, fall back to highlighting all occurrences
-                        System.out.println("[DEBUG_LOG] Couldn't find containing block, highlighting all occurrences");
                         return findLocalVariableDeclaration(file, variableName, null);
                     }
                 }
@@ -89,13 +86,9 @@ public class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler {
         
         // Find all defglobal elements in the file
         for (PsiElement child : file.getChildren()) {
-            System.out.println("Looking at child: " + child.getNode().getElementType() + " - " + child.getText());
             if (child.getNode().getElementType() == CLIPSElementTypes.CONSTRUCT) {
                 var firstChild = child.getFirstChild();
-                System.out.println("First child: " + (firstChild != null ? firstChild.getNode().getElementType() : "null"));
                 if (firstChild != null && firstChild.getNode().getElementType() == CLIPSElementTypes.DEFGLOBAL_CONSTRUCT) {
-                    System.out.println("Found defglobal construct: " + child.getText());
-                    // Found a defglobal block, now search for the variable declaration
                     findGlobalVariableInDefglobal(firstChild, variableName, declarations);
                 }
             }
@@ -119,10 +112,8 @@ public class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler {
     private void findGlobalVariableInDefglobal(PsiElement defglobal, String variableName, List<PsiElement> declarations) {
         // Iterate through all children of the defglobal element
         for (PsiElement child : defglobal.getChildren()) {
-            System.out.println("\tchild: " + child.getNode().getElementType() + " - " + child.getText());
             if (child instanceof CLIPSGlobalVariableDef globalVariableDef) {
                 String currentVarName = globalVariableDef.getName();
-                System.out.println("\t\tChecking variable: " + currentVarName + " == " + variableName);
                 if (variableName.equals(currentVarName)) {
                     // Found the variable declaration
                     declarations.add(child);

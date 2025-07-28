@@ -19,11 +19,11 @@ import java.util.Stack;
 /**
  * Handler for highlighting all occurrences of a CLIPS variable when clicked.
  */
-public class CLIPSHighlightUsagesHandler extends HighlightUsagesHandlerBase<PsiElement> {
+public class CLIPSVariableHighlightUsagesHandler extends HighlightUsagesHandlerBase<PsiElement> {
     private final CLIPSNamedElement myVariable;
     private final List<PsiElement> myTargets = new ArrayList<>();
 
-    public CLIPSHighlightUsagesHandler(@NotNull Editor editor, @NotNull PsiFile file, @NotNull CLIPSNamedElement variable) {
+    public CLIPSVariableHighlightUsagesHandler(@NotNull Editor editor, @NotNull PsiFile file, @NotNull CLIPSNamedElement variable) {
         super(editor, file);
         myVariable = variable;
         myTargets.add(variable);
@@ -43,16 +43,12 @@ public class CLIPSHighlightUsagesHandler extends HighlightUsagesHandlerBase<PsiE
     public void computeUsages(@NotNull List<? extends PsiElement> targets) {
         // Add the variable itself to the list of usages
         addOccurrence(myVariable);
-        System.out.println("[DEBUG_LOG] Added variable to occurrences: " + myVariable.getText() + " - " + myVariable.getName());
 
         // Get the variable name without the prefix (?, $?, ?*)
         String variableName = myVariable.getName();
         if (variableName == null || variableName.isEmpty()) {
-            System.out.println("[DEBUG_LOG] Variable name is null or empty, not finding occurrences");
             return;
         }
-
-//        System.out.println("[DEBUG_LOG] Finding occurrences of variable: " + variableName);
 
         // Check if the variable is global
         boolean isGlobal = isGlobalVariable(myVariable);

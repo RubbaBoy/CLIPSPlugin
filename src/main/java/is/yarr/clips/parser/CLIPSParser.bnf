@@ -16,7 +16,7 @@
 
   // Make comments and whitespace non-significant for the grammar rules
   extends(".*")="is.yarr.clips.psi.impl.CLIPSPsiElementImpl"
-  implements("parameter|variable_element|global_variable_def|(.*_construct)")="is.yarr.clips.psi.CLIPSNamedElement"
+  implements("parameter|variable_element|global_variable_def|def_name|(.*_construct)")="is.yarr.clips.psi.CLIPSNamedElement"
 
   tokens=[
     KEYWORD="KEYWORD"
@@ -33,6 +33,8 @@ private item ::= construct | function_call | COMMENT
 // These correspond to tokens from CLIPSLexer.flex and CLIPSTypes.java
 constant ::= STRING | NUMBER | IDENTIFIER | "crlf" | "t" | "TRUE" | "FALSE" | "nil"
 variable_element ::= VARIABLE | GLOBAL_VARIABLE | MULTIFIELD_VARIABLE
+
+def_name ::= IDENTIFIER  // The name of some construct def*
 
 expression ::= constant | variable_element | function_call
 
@@ -53,7 +55,7 @@ private regular_function_guts ::= function_name expression*
 // A function name can be an identifier, a built-in, a variable, or a keyword.
 // Keywords like 'and', 'or', 'not' are parsed here. The 'if' keyword is
 // handled by the 'if_guts' rule because of the ordered choice in the 'function_call' rule.
-private function_name ::= IDENTIFIER | BUILTIN_FUNCTION | variable_element | KEYWORD
+private function_name ::= def_name | BUILTIN_FUNCTION | variable_element | KEYWORD
 
 
 //private function_name ::= IDENTIFIER | BUILTIN_FUNCTION | variable_element
@@ -67,17 +69,55 @@ construct ::= defrule_construct
             | defmodule_construct
             | defclass_construct
 
+
 // ----------- Deftemplate Construct -----------
 // Based on <deftemplate-construct> from the CLIPS Reference Manual [1]
-deftemplate_construct ::= LPAREN "deftemplate" IDENTIFIER [STRING]
-                            slot_definition*
-                          RPAREN
+deftemplate_construct ::= LPAREN "deftemplate" def_name (COMMENT)? slot_definition* RPAREN {
+    pin=2 // Pin 'deftemplate' keyword to aid parser recovery
+}
 
 slot_definition ::= single_slot_definition | multislot_definition
 
-private single_slot_definition ::= LPAREN "slot" IDENTIFIER template_attribute* RPAREN
-private multislot_definition ::= LPAREN "multislot" IDENTIFIER template_attribute* RPAREN
-private template_attribute ::= LPAREN ("default" | "default-dynamic") expression* RPAREN // Simplified
+single_slot_definition ::= LPAREN "slot" def_name template_attribute* RPAREN {
+    pin=2
+}
+
+multislot_definition ::= LPAREN "multislot" def_name template_attribute* RPAREN {
+    pin=2
+}
+
+// A slot can have one or more attributes.
+template_attribute ::= constraint_attribute | default_attribute
+
+// --- Constraint Attributes ---
+// Based on CLIPS Reference Manual, Section 11
+constraint_attribute ::= type_constraint
+                       | range_constraint
+                       | cardinality_constraint
+
+type_constraint ::= LPAREN "type" type_specifier+ RPAREN {
+    pin=2
+}
+
+// A type specifier is a CLIPS type name (e.g., STRING, INTEGER) or a variable.
+type_specifier ::= IDENTIFIER | VARIABLE
+
+range_constraint ::= LPAREN "range" range_specification range_specification RPAREN {
+    pin=2
+}
+
+range_specification ::= NUMBER | VARIABLE
+
+cardinality_constraint ::= LPAREN "cardinality" cardinality_specification cardinality_specification RPAREN {
+    pin=2
+}
+
+cardinality_specification ::= NUMBER | VARIABLE
+
+// --- Default Attribute ---
+// Based on CLIPS Reference Manual, Appendix G
+default_attribute ::= LPAREN "default" expression* RPAREN
+                    | LPAREN "default-dynamic" expression* RPAREN
 
 // ----------- Defrule Construct -----------
 // Based on <defrule-construct> from the CLIPS Reference Manual [1]
@@ -92,13 +132,13 @@ private declaration ::= LPAREN "declare" rule_property+ RPAREN
 private rule_property ::= LPAREN "salience" NUMBER RPAREN // Simplified
 
 private conditional_element ::= pattern_ce | test_ce // Simplified, others include and, or, not, etc. [1]
-private pattern_ce ::= LPAREN IDENTIFIER expression* RPAREN // Simplified pattern
+private pattern_ce ::= LPAREN def_name expression* RPAREN // Simplified pattern
 private test_ce ::= LPAREN "test" expression RPAREN
 private action ::= expression
 
 // ----------- Other Constructs -----------
-deffacts_construct ::= LPAREN "deffacts" IDENTIFIER [STRING] rhs_pattern* RPAREN
-private rhs_pattern ::= LPAREN IDENTIFIER expression* RPAREN
+deffacts_construct ::= LPAREN "deffacts" IDENTIFIER [STRING] deffacts_rhs_pattern* RPAREN
+deffacts_rhs_pattern ::= LPAREN def_name expression* RPAREN
 
 deffunction_construct ::= LPAREN "deffunction" IDENTIFIER [STRING]
                             LPAREN parameter_list [MULTIFIELD_VARIABLE] RPAREN
@@ -114,6 +154,6 @@ private defglobal_assignment ::= global_variable_def "=" expression
 defmodule_construct ::= LPAREN "defmodule" IDENTIFIER [STRING] RPAREN
 
 defclass_construct ::= LPAREN "defclass" IDENTIFIER [STRING]
-                         ["is-a" IDENTIFIER+]
+                         ["is-a" def_name+]
                          slot_definition*
                        RPAREN
