@@ -1,0 +1,276 @@
+{
+  // Meta-information for parser generators
+  parserClass="is.yarr.clips.parser.CLIPSParser"
+  psiClassPrefix="CLIPS"
+  psiImplClassSuffix="Impl"
+  psiPackage="is.yarr.clips.psi"
+  psiImplPackage="is.yarr.clips.psi.impl"
+
+  elementTypeHolderClass="is.yarr.clips.psi.CLIPSTypes"
+  elementTypeClass="is.yarr.clips.psi.CLIPSElementType"
+  tokenTypeClass="is.yarr.clips.psi.CLIPSTokenType"
+  psiImplUtilClass="is.yarr.clips.psi.impl.CLIPSPsiImplUtil"
+
+  // Make comments and whitespace non-significant for the grammar rules
+  extends(".*")="is.yarr.clips.psi.impl.CLIPSPsiElementImpl"
+
+  tokens=[
+    KEYWORD
+    BUILTIN_FUNCTION
+    AMPERSAND
+    PIPE
+    TILDE
+    COLON
+    MULTIFIELD_WILDCARD
+    WILDCARD
+    MULTIFIELD_VARIABLE
+  ]
+}
+
+// The root of a CLIPS file is a sequence of constructs or function calls.
+File ::= item*
+
+private item ::= construct | function_call | COMMENT
+
+// ----------- Basic Types & Expressions -----------
+// These correspond to tokens from CLIPSLexer.flex
+constant ::= STRING | NUMBER | IDENTIFIER | "crlf" | "t" | "TRUE" | "FALSE" | "nil"
+
+variable_element ::= VARIABLE {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+global_variable_def ::= GLOBAL_VARIABLE {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+multifield_variable_element ::= MULTIFIELD_VARIABLE {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+
+def_name ::= IDENTIFIER
+
+// Start expressions
+expression ::= constant | variable_element | global_variable_def | multifield_variable_element | function_call
+
+// ----------- Constraints -----------
+// This section implements field constraints for use in rule patterns (LHS).
+// The rules are structured to enforce CLIPS operator precedence: ~ (highest), & (middle), | (lowest).
+
+// A constraint is the top-level element used within a pattern field.
+constraint ::= or_constraint
+
+// The '|' (OR) connective has the lowest precedence.
+private or_constraint ::= and_constraint (PIPE and_constraint)*
+
+// The '&' (AND) connective has medium precedence.
+private and_constraint ::= not_constraint (AMPERSAND not_constraint)*
+
+// The '~' (NOT) connective has the highest precedence.
+private not_constraint ::= TILDE? single_field_constraint
+
+// A predicate constraint is a function call prefixed by ':' that must evaluate to TRUE.
+predicate_constraint ::= COLON function_call
+
+// A single_field_constraint is the fundamental atom of a constraint expression.
+private single_field_constraint ::=
+  constant
+  | variable_element
+  | global_variable_def
+  | predicate_constraint
+  | WILDCARD
+  | MULTIFIELD_WILDCARD
+
+// End expressions
+
+// A function call is a parenthesized list with a function name followed by zero or more expressions
+// A function call can be a special control structure like 'if' or a regular call.
+function_call ::= LPAREN (if_guts | regular_function_guts) RPAREN
+
+// The body of an if-then-else construct.
+// Syntax: (if <expression> then <action>* [else <action>*])
+private if_guts ::= "if" expression "then" expression* ("else" expression*)? {
+  pin=1 // Pin after the 'if' keyword to commit to this parsing rule.
+}
+
+// The body of a regular function call.
+private regular_function_guts ::= function_name expression*
+
+// A function name can be an identifier, a built-in, a variable, or a keyword.
+private function_name ::= def_name | BUILTIN_FUNCTION | variable_element | global_variable_def | KEYWORD
+
+// ----------- Top-Level Constructs -----------
+construct ::= defrule_construct
+            | deftemplate_construct
+            | deffacts_construct
+            | defglobal_construct
+            | deffunction_construct
+            | defmodule_construct
+            | defclass_construct
+
+// ----------- Deftemplate Construct -----------
+deftemplate_construct ::= LPAREN "deftemplate" template_name (COMMENT)? slot_definition* RPAREN {
+  pin=2
+}
+
+template_name ::= IDENTIFIER {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+slot_definition ::= single_slot_definition | multislot_definition
+
+single_slot_definition ::= LPAREN "slot" slot_name template_attribute* RPAREN {
+    pin=2
+}
+
+multislot_definition ::= LPAREN "multislot" slot_name template_attribute* RPAREN {
+    pin=2
+}
+
+slot_name ::= IDENTIFIER {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+// A slot can have one or more attributes.
+template_attribute ::= constraint_attribute | default_attribute
+
+// --- Constraint Attributes ---
+constraint_attribute ::= type_constraint
+                       | range_constraint
+                       | cardinality_constraint
+
+type_constraint ::= LPAREN "type" type_specifier+ RPAREN {
+    pin=2
+}
+
+// A type specifier is a CLIPS type name (e.g., STRING, INTEGER) or a variable.
+type_specifier ::= IDENTIFIER | VARIABLE
+
+range_constraint ::= LPAREN "range" range_specification range_specification RPAREN {
+    pin=2
+}
+
+range_specification ::= NUMBER | VARIABLE
+
+cardinality_constraint ::= LPAREN "cardinality" cardinality_specification cardinality_specification RPAREN {
+    pin=2
+}
+
+cardinality_specification ::= NUMBER | VARIABLE
+
+// --- Default Attribute ---
+default_attribute ::= LPAREN "default" expression* RPAREN
+                    | LPAREN "default-dynamic" expression* RPAREN
+
+// ----------- Defrule Construct -----------
+defrule_construct ::= LPAREN "defrule" rule_name [STRING]
+                        [declaration]
+                        conditional_element*
+                        "=>"
+                        rhs_action*
+                      RPAREN {
+  pin=2
+}
+
+rule_name ::= IDENTIFIER {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+private declaration ::= LPAREN "declare" rule_property+ RPAREN
+private rule_property ::= LPAREN "salience" expression RPAREN
+                      | LPAREN "auto-focus" ("TRUE" | "FALSE") RPAREN
+
+private conditional_element ::= pattern_ce | test_ce // Simplified, others include and, or, not, etc.
+private test_ce ::= LPAREN "test" expression RPAREN
+private pattern_ce ::= ordered_pattern_CE | template_pattern_CE
+
+// An ordered pattern, e.g., (sensor-reading high ?value).
+private ordered_pattern_CE ::= LPAREN def_name constraint* RPAREN
+
+// A template pattern, e.g., (system-info (cpu-usage ?c) (temp ?t&:(> ?t 90))).
+private template_pattern_CE ::= LPAREN def_name template_slot_pattern+ RPAREN
+private template_slot_pattern ::= LPAREN slot_name constraint* RPAREN
+
+// An action on the Right-Hand Side (RHS) of a rule is any valid expression.
+private rhs_action ::= expression
+
+// ----------- Other Constructs -----------
+deffacts_construct ::= LPAREN "deffacts" deffacts_name [STRING] deffacts_rhs_pattern* RPAREN {
+  pin=2
+}
+
+deffacts_name ::= IDENTIFIER {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+deffacts_rhs_pattern ::= LPAREN def_name expression* RPAREN
+
+deffunction_construct ::= LPAREN "deffunction" function_name [STRING]
+                            LPAREN parameter_list [MULTIFIELD_VARIABLE] RPAREN
+                            rhs_action*
+                          RPAREN {
+  pin=2
+}
+
+parameter ::= VARIABLE {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+parameter_list ::= parameter*
+
+defglobal_construct ::= LPAREN "defglobal" [IDENTIFIER] defglobal_assignment* RPAREN {
+  pin=2
+}
+
+private defglobal_assignment ::= global_variable_def "=" expression
+
+defmodule_construct ::= LPAREN "defmodule" module_name comment? port_specification* RPAREN {
+  pin=2
+}
+
+module_name ::= IDENTIFIER {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+private port_specification ::= LPAREN (import_spec | export_spec) RPAREN
+
+import_spec ::= "import" def_name port_item
+export_spec ::= "export" port_item
+
+// A port item can be a wildcard (?ALL, ?NONE), or a construct type followed by a wildcard or one or more names.
+private port_item ::= variable_element | (port_construct_type (variable_element | def_name+))
+
+// The types of constructs that can be imported/exported.
+private port_construct_type ::= "deftemplate" | "defclass" | "defglobal" | "deffunction" | "defgeneric"
+
+defclass_construct ::= LPAREN "defclass" class_name [STRING]
+                         ["is-a" def_name+]
+                         slot_definition*
+                       RPAREN {
+  pin=2
+}
+
+class_name ::= IDENTIFIER {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}

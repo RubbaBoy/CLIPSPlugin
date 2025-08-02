@@ -1,0 +1,96 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>is.yarr.clips</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+    <name>CLIPS Language</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor url="https://github.com/yarr">YARR</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+    <description><![CDATA[
+        Provides support for the CLIPS (C Language Integrated Production System) language.<br>
+        <br>
+        Features include:
+        <ul>
+            <li>Syntax highlighting for CLIPS files</li>
+            <li>Code navigation and references for variables, templates, and functions</li>
+            <li>Validation for template assertions</li>
+            <li>Renaming support with proper scope handling</li>
+        </ul>
+    ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType
+            name="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSFileType"
+            fieldName="INSTANCE"
+            language="CLIPS"
+            extensions="clp"/>
+            
+        <lang.parserDefinition
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSParserDefinition"/>
+            
+        <lang.syntaxHighlighterFactory
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSSyntaxHighlighterFactory"/>
+            
+        <colorSettingsPage
+            implementation="is.yarr.clips.CLIPSColorSettingsPage"/>
+            
+        <annotator
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSAnnotator"/>
+            
+        <completion.contributor
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSCompletionContributor"/>
+            
+        <psi.referenceContributor
+            language="CLIPS"
+            implementation="is.yarr.clips.CLIPSReferenceContributor"/>
+            
+        <lang.refactoringSupport
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSRefactoringSupportProvider"/>
+            
+        <lang.findUsagesProvider
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSFindUsagesProvider"/>
+            
+        <lang.commenter
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSCommenter"/>
+            
+        <lang.braceMatcher
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSBraceMatcher"/>
+            
+        <lang.foldingBuilder
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSFoldingBuilder"/>
+            
+        <lang.psiStructureViewFactory
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSStructureViewFactory"/>
+            
+        <localInspection
+            language="CLIPS"
+            displayName="CLIPS template slot validation"
+            groupName="CLIPS"
+            enabledByDefault="true"
+            level="ERROR"
+            implementationClass="is.yarr.clips.CLIPSTemplateSlotInspection"/>
+    </extensions>
+</idea-plugin>
