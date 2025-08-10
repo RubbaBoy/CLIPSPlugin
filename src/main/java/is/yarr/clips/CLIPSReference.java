@@ -47,6 +47,7 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         this.name = name;
         this.type = type;
         System.out.println("[DEBUG_LOG] Created CLIPSReference: element=" + element + ", textRange=" + textRange + ", name=" + name + ", type=" + type);
+        System.out.println("[DEBUG_LOG] Element text: " + element.getText() + ", textRange text: " + element.getText().substring(textRange.getStartOffset(), textRange.getEndOffset()));
     }
 
     /**
@@ -59,6 +60,10 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @Override
     public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
         System.out.println("[DEBUG_LOG] multiResolve called for: element=" + myElement + ", name=" + name + ", type=" + type);
+        System.out.println("[DEBUG_LOG] multiResolve element class: " + myElement.getClass().getName());
+        System.out.println("[DEBUG_LOG] multiResolve element text: " + myElement.getText());
+        System.out.println("[DEBUG_LOG] multiResolve textRange: " + getRangeInElement());
+        
         Project project = myElement.getProject();
         List<ResolveResult> results = new ArrayList<>();
         
@@ -72,6 +77,9 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         }
         
         System.out.println("[DEBUG_LOG] multiResolve results: count=" + results.size() + ", results=" + results);
+        for (ResolveResult result : results) {
+            System.out.println("[DEBUG_LOG] multiResolve result: " + result + ", element=" + result.getElement());
+        }
         return results.toArray(new ResolveResult[0]);
     }
 
@@ -122,6 +130,21 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
             
             if (name.equals(varName) && isDecl) {
                 System.out.println("[DEBUG_LOG] findVariableDeclarations found match: " + variable);
+                results.add(new PsiElementResolveResult(variable));
+            }
+        }
+        
+        // Also find multifield variable declarations in the scope
+        var multifieldVariables = PsiTreeUtil.findChildrenOfType(scope, CLIPSMultifieldVariableElement.class);
+        System.out.println("[DEBUG_LOG] findVariableDeclarations found multifield variables: count=" + multifieldVariables.size());
+        
+        for (CLIPSMultifieldVariableElement variable : multifieldVariables) {
+            String varName = variable.getName();
+            boolean isDecl = isMultifieldDeclaration(variable);
+            System.out.println("[DEBUG_LOG] findVariableDeclarations checking multifield variable: " + variable + ", name=" + varName + ", isDeclaration=" + isDecl);
+            
+            if (name.equals(varName) && isDecl) {
+                System.out.println("[DEBUG_LOG] findVariableDeclarations found multifield match: " + variable);
                 results.add(new PsiElementResolveResult(variable));
             }
         }
@@ -233,6 +256,18 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
                 );
             }
         }
+        
+        // Also find multifield variable declarations in the scope
+        var multifieldVariables = PsiTreeUtil.findChildrenOfType(scope, CLIPSMultifieldVariableElement.class);
+        for (CLIPSMultifieldVariableElement variable : multifieldVariables) {
+            if (isMultifieldDeclaration(variable)) {
+                variants.add(LookupElementBuilder
+                    .create(variable)
+                    .withIcon(CLIPSIcons.FILE)
+                    .withTypeText("Multifield Variable")
+                );
+            }
+        }
     }
 
     /**
@@ -336,6 +371,7 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     /**
      * Finds the containing scope (rule, function, etc.) for a variable.
+     * This method identifies the appropriate scope for variable declarations and references.
      */
     private PsiElement findContainingScope(PsiElement element) {
         System.out.println("[DEBUG_LOG] findContainingScope called for element: " + element);
@@ -344,7 +380,10 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
             CLIPSDefruleConstruct.class, 
             CLIPSDeffunctionConstruct.class,
             CLIPSDeftemplateConstruct.class,
-            CLIPSDefglobalConstruct.class
+            CLIPSDefglobalConstruct.class,
+            CLIPSDeffactsConstruct.class,
+            CLIPSDefmoduleConstruct.class,
+            CLIPSDefclassConstruct.class
         );
         
         System.out.println("[DEBUG_LOG] findContainingScope found scope: " + scope + 
@@ -408,6 +447,55 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         }
         
         System.out.println("[DEBUG_LOG] isDeclaration: No matching variable found, returning false");
+        return false;
+    }
+    
+    /**
+     * Checks if a multifield variable element is a declaration.
+     * In CLIPS, variables are often declared implicitly by their first use.
+     * This method determines if the given multifield variable is the first occurrence in its scope.
+     */
+    private boolean isMultifieldDeclaration(CLIPSMultifieldVariableElement variable) {
+        System.out.println("[DEBUG_LOG] isMultifieldDeclaration called for variable: " + variable);
+        
+        // Find the containing scope (rule, function, etc.)
+        PsiElement scope = findContainingScope(variable);
+        System.out.println("[DEBUG_LOG] isMultifieldDeclaration scope: " + scope);
+        if (scope == null) {
+            System.out.println("[DEBUG_LOG] isMultifieldDeclaration: No scope found, returning false");
+            return false;
+        }
+        
+        // Get the name of the variable (without the '$?' prefix)
+        String variableName = variable.getName();
+        System.out.println("[DEBUG_LOG] isMultifieldDeclaration variableName: " + variableName);
+        if (variableName == null) {
+            System.out.println("[DEBUG_LOG] isMultifieldDeclaration: No variable name, returning false");
+            return false;
+        }
+        
+        // Find all multifield variable elements in the scope
+        Collection<CLIPSMultifieldVariableElement> variables = PsiTreeUtil.findChildrenOfType(scope, CLIPSMultifieldVariableElement.class);
+        System.out.println("[DEBUG_LOG] isMultifieldDeclaration found variables: count=" + variables.size());
+        
+        // Sort the variables by their text offset to find the first occurrence
+        List<CLIPSMultifieldVariableElement> sortedVariables = new ArrayList<>(variables);
+        sortedVariables.sort((v1, v2) -> v1.getTextOffset() - v2.getTextOffset());
+        
+        // Check if the given variable is the first occurrence of its name in the scope
+        for (CLIPSMultifieldVariableElement v : sortedVariables) {
+            String vName = v.getName();
+            int offset = v.getTextOffset();
+            System.out.println("[DEBUG_LOG] isMultifieldDeclaration checking variable: " + v + ", name=" + vName + ", offset=" + offset);
+            
+            if (variableName.equals(vName)) {
+                boolean isFirst = v.equals(variable);
+                System.out.println("[DEBUG_LOG] isMultifieldDeclaration found matching name: " + v + ", isFirst=" + isFirst);
+                return isFirst;
+            }
+        }
+        
+        System.out.println("[DEBUG_LOG] isMultifieldDeclaration: No matching variable found, returning false");
         return false;
     }
 }

@@ -13,8 +13,20 @@ import org.jetbrains.annotations.NotNull;
 public abstract class CLIPSNamedElementImpl extends CLIPSPsiElementImpl implements CLIPSNamedElement {
     public CLIPSNamedElementImpl(@NotNull ASTNode node) {
         super(node);
+        System.out.println("[DEBUG_LOG] CLIPSNamedElementImpl constructor: element class=" + this.getClass().getName() + 
+                          ", node type=" + node.getElementType() + 
+                          ", text='" + node.getText() + "'");
     }
     
     // The implementations of getName, setName, and getNameIdentifier
     // are in CLIPSPsiImplUtil and referenced in the BNF file.
+    
+    @Override
+    public String toString() {
+        String result = super.toString();
+        System.out.println("[DEBUG_LOG] CLIPSNamedElementImpl.toString: element class=" + this.getClass().getName() + 
+                          ", text='" + this.getText() + "'" + 
+                          ", result='" + result + "'");
+        return result;
+    }
 }

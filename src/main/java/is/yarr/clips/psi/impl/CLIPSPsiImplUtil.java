@@ -55,7 +55,12 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static String getName(CLIPSVariableElement element) {
-        return getVariableName(element);
+        String name = getVariableName(element);
+        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getName(CLIPSVariableElement): element=" + element + 
+                          ", class=" + element.getClass().getName() + 
+                          ", text='" + element.getText() + "'" + 
+                          ", name='" + name + "'");
+        return name;
     }
     
     /**
@@ -73,6 +78,9 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSVariableElement element) {
+        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getNameIdentifier(CLIPSVariableElement): element=" + element + 
+                          ", class=" + element.getClass().getName() + 
+                          ", text='" + element.getText() + "'");
         return element;
     }
     
@@ -285,7 +293,13 @@ public class CLIPSPsiImplUtil {
      */
     public static String getName(CLIPSMultifieldVariableElement element) {
         PsiElement multifieldVar = element.getMultifieldVariable();
-        return getMultifieldVariableName(multifieldVar);
+        String name = getMultifieldVariableName(multifieldVar);
+        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getName(CLIPSMultifieldVariableElement): element=" + element + 
+                          ", class=" + element.getClass().getName() + 
+                          ", text='" + element.getText() + "'" + 
+                          ", multifieldVar='" + multifieldVar.getText() + "'" +
+                          ", name='" + name + "'");
+        return name;
     }
     
     /**
@@ -302,7 +316,13 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSMultifieldVariableElement element) {
-        return element.getMultifieldVariable();
+        PsiElement nameIdentifier = element.getMultifieldVariable();
+        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getNameIdentifier(CLIPSMultifieldVariableElement): element=" + element + 
+                          ", class=" + element.getClass().getName() + 
+                          ", text='" + element.getText() + "'" +
+                          ", nameIdentifier='" + nameIdentifier.getText() + "'" +
+                          ", nameIdentifier class=" + nameIdentifier.getClass().getName());
+        return nameIdentifier;
     }
     
     // Methods for CLIPSMultifieldVariable and CLIPSMultifieldVar have been removed

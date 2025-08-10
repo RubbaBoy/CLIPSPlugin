@@ -8,8 +8,9 @@
 - Ensure clean, modular code with documentation for methods. Do not go overboard with comments in the body of the code
 - Prioritize readability, but the code should be concise but not to the point where it affects readability.
 - Use the latest and most sensible ways of doing things
-- NEVER MODIFY GENERATED CODE MANUALLY. Ask the user to regenerate the code when necessary, and wait 10 seconds for them to do so. Then, check if the code is regenerated. If not, ask the user to regenerate it again.
+- NEVER MODIFY GENERATED CODE MANUALLY. Use the Code Generation section below
 - Before a task is done, unless specified otherwise, **ensure it builds with the IDE without errors**
+- If unsure about something, ask the user for clarification. Always check your worn, and if unsure, ask the user for confirmation or clarification.
 
 ## Using References
 
