@@ -85,6 +85,11 @@
             language="CLIPS"
             implementationClass="is.yarr.clips.CLIPSStructureViewFactory"/>
             
+        <!-- Ensure leaf tokens participate in reference providers -->
+        <lang.ast.factory
+            language="CLIPS"
+            implementationClass="is.yarr.clips.CLIPSAstFactory"/>
+            
         <localInspection
             language="CLIPS"
             displayName="CLIPS template slot validation"

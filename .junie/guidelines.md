@@ -129,18 +129,10 @@ Incorporate the following steps into the `<PLAN>` as a top level item called 'Ch
 - Use `<project_root>/plans`
 - Create a plan in markdown format whose name is formed from the current date in YYYY-MM-DDTHH-mm format, plus a terse summarization of the `<issue_description>`, with `.md` extension
 
-# Features Directory
-
-- Use `<project_root>/features`
-- In the Features Directory, maintain a markdown file `dsl.md` with the domain specific language for steps. Ensure that the acceptance tests and the DSL are kept in sync.
-- Logically group the scenarios using semantically named files in Gherkin format with the `.feature` extension
-- Use the DSL to avoid variance in step definitions
-- Avoid repetitive steps, devise concise steps where possible
-
 # Commit Message Format
 
 - Create a concise title that describes the nature of the change
-- Leave a blank link, and then describe the changes, using bullet points for multiple changes.
+- Leave a blank line, and then describe the changes, using bullet points for multiple changes.
 - Avoid overly verbose descriptions or unnecessary details.
 
 # Reviewing the codebase
@@ -148,8 +140,6 @@ Incorporate the following steps into the `<PLAN>` as a top level item called 'Ch
 - Search for all files including dot directories, but excluding the following:
     - .idea directory
     - .git directory
-    - node_modules directory
-- Limit the search to 100 files
 
 # Ask the user
 

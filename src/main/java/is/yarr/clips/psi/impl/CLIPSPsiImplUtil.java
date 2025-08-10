@@ -78,10 +78,13 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSVariableElement element) {
-        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getNameIdentifier(CLIPSVariableElement): element=" + element + 
-                          ", class=" + element.getClass().getName() + 
-                          ", text='" + element.getText() + "'");
-        return element;
+        var node = element.getNode();
+        var child = node.findChildByType(VARIABLE);
+        var result = child != null ? child.getPsi() : (PsiElement) element;
+        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getNameIdentifier(CLIPSVariableElement): element=" + element +
+                          ", childType=" + (child != null ? child.getElementType() : null) +
+                          ", resultText='" + result.getText() + "'");
+        return result;
     }
     
     /**
@@ -108,7 +111,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSGlobalVariableDef element) {
-        return element;
+        var child = element.getNode().findChildByType(GLOBAL_VARIABLE);
+        return child != null ? child.getPsi() : element;
     }
     
     /**
@@ -133,7 +137,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSTemplateName element) {
-        return element;
+        var child = element.getNode().findChildByType(IDENTIFIER);
+        return child != null ? child.getPsi() : element;
     }
     
     /**
@@ -158,7 +163,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSSlotName element) {
-        return element;
+        var child = element.getNode().findChildByType(IDENTIFIER);
+        return child != null ? child.getPsi() : element;
     }
     
     /**
@@ -183,7 +189,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSParameter element) {
-        return element;
+        var child = element.getNode().findChildByType(VARIABLE);
+        return child != null ? child.getPsi() : element;
     }
     
     /**
@@ -208,7 +215,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSClassName element) {
-        return element;
+        var child = element.getNode().findChildByType(IDENTIFIER);
+        return child != null ? child.getPsi() : element;
     }
     
     /**
@@ -233,7 +241,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSDeffactsName element) {
-        return element;
+        var child = element.getNode().findChildByType(IDENTIFIER);
+        return child != null ? child.getPsi() : element;
     }
     
     /**
@@ -258,7 +267,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSModuleName element) {
-        return element;
+        var child = element.getNode().findChildByType(IDENTIFIER);
+        return child != null ? child.getPsi() : element;
     }
     
     /**
@@ -283,7 +293,8 @@ public class CLIPSPsiImplUtil {
      * This method is referenced in the BNF file.
      */
     public static PsiElement getNameIdentifier(CLIPSRuleName element) {
-        return element;
+        var child = element.getNode().findChildByType(IDENTIFIER);
+        return child != null ? child.getPsi() : element;
     }
     
     /**

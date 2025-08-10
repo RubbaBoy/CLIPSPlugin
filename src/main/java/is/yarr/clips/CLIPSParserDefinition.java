@@ -67,9 +67,9 @@ public class CLIPSParserDefinition implements ParserDefinition {
     @Override
     public @NotNull PsiElement createElement(ASTNode node) {
         PsiElement element = CLIPSTypes.Factory.createElement(node);
-        System.out.println("[DEBUG_LOG] CLIPSParserDefinition.createElement: Created element of type " + element.getClass().getName() + 
-                          " for node type " + node.getElementType() + 
-                          ", text: '" + node.getText() + "'");
+//        System.out.println("[DEBUG_LOG] CLIPSParserDefinition.createElement: Created element of type " + element.getClass().getName() +
+//                          " for node type " + node.getElementType() +
+//                          ", text: '" + node.getText() + "'");
         return element;
     }
 }

@@ -19,13 +19,25 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         System.out.println("[DEBUG_LOG] CLIPSReferenceContributor.registerReferenceProviders called");
+        // Diagnostic: broad language-scoped provider to verify contributor is firing
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement().withLanguage(CLIPSLanguage.INSTANCE),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                                       @NotNull ProcessingContext context) {
+                    var node = element.getNode();
+                    var elemType = node != null ? node.getElementType() : null;
+                    var parent = element.getParent();
+                    System.out.println("[DEBUG_LOG] [Diag] ReferenceContributor queried: text='" + element.getText() + "', type=" + elemType +
+                            ", elemClass=" + element.getClass().getName() + ", parentClass=" + (parent != null ? parent.getClass().getName() : "null"));
+                    return PsiReference.EMPTY_ARRAY; // no-op; specific providers below will still run
+                }
+            }
+        );
         
-        // Register reference provider for variables
+        // Register reference provider for variables (composite PSI element)
         System.out.println("[DEBUG_LOG] Registering reference provider for CLIPSVariableElement");
-        // Register reference provider for specific PSI element types
-        System.out.println("[DEBUG_LOG] Registering reference provider with specific patterns");
-        
-        // Create patterns for each element type we want to provide references for
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(CLIPSVariableElement.class),
             new PsiReferenceProvider() {
@@ -39,35 +51,21 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
                     System.out.println("[DEBUG_LOG] Element parent: " + element.getParent());
                     System.out.println("[DEBUG_LOG] Element parent class: " + (element.getParent() != null ? element.getParent().getClass().getName() : "null"));
                     
-                    if (element instanceof CLIPSVariableElement) {
-                        CLIPSVariableElement variable = (CLIPSVariableElement) element;
-                        String name = variable.getName();
+                    if (element instanceof CLIPSVariableElement variable) {
+                        var name = variable.getName();
                         System.out.println("[DEBUG_LOG] Variable name: " + name);
-                        
-                        if (name == null) {
-                            System.out.println("[DEBUG_LOG] Variable name is null, returning empty array");
-                            return PsiReference.EMPTY_ARRAY;
-                        }
-                        
-                        // For variables, we need to exclude the '?' prefix from the range
-                        String text = element.getText();
-                        int startOffset = text.startsWith("?") ? 1 : 0;
-                        TextRange range = new TextRange(startOffset, element.getTextLength());
-                        System.out.println("[DEBUG_LOG] Creating reference for variable: " + element + ", range: " + range + ", name: " + name);
-                        
-                        CLIPSReference reference = new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE);
-                        System.out.println("[DEBUG_LOG] Created variable reference: " + reference);
-                        
-                        return new PsiReference[]{reference};
+                        if (name == null) return PsiReference.EMPTY_ARRAY;
+                        var text = element.getText();
+                        var startOffset = text.startsWith("?") ? 1 : 0;
+                        var range = new TextRange(startOffset, element.getTextLength());
+                        return new PsiReference[]{ new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE) };
                     }
-                    
-                    System.out.println("[DEBUG_LOG] Not a variable, returning empty array");
                     return PsiReference.EMPTY_ARRAY;
                 }
             }
         );
         
-        // Register reference provider for multifield variables
+        // Register reference provider for multifield variables (composite PSI element)
         System.out.println("[DEBUG_LOG] Registering reference provider for CLIPSMultifieldVariableElement");
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(CLIPSMultifieldVariableElement.class),
@@ -76,38 +74,20 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
                                                                      @NotNull ProcessingContext context) {
                     System.out.println("[DEBUG_LOG] Multifield variable reference provider's getReferencesByElement called for: " + element);
-                    System.out.println("[DEBUG_LOG] Element class: " + element.getClass().getName());
-                    System.out.println("[DEBUG_LOG] Element text: " + element.getText());
-                    
-                    if (element instanceof CLIPSMultifieldVariableElement) {
-                        CLIPSMultifieldVariableElement variable = (CLIPSMultifieldVariableElement) element;
-                        String name = variable.getName();
-                        System.out.println("[DEBUG_LOG] Multifield variable name: " + name);
-                        
-                        if (name == null) {
-                            System.out.println("[DEBUG_LOG] Multifield variable name is null, returning empty array");
-                            return PsiReference.EMPTY_ARRAY;
-                        }
-                        
-                        // For multifield variables, we need to exclude the '$?' prefix from the range
-                        String text = element.getText();
-                        int startOffset = text.startsWith("$?") ? 2 : 0;
-                        TextRange range = new TextRange(startOffset, element.getTextLength());
-                        System.out.println("[DEBUG_LOG] Creating reference for multifield variable: " + element + ", range: " + range + ", name: " + name);
-                        
-                        CLIPSReference reference = new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE);
-                        System.out.println("[DEBUG_LOG] Created multifield reference: " + reference);
-                        
-                        return new PsiReference[]{reference};
+                    if (element instanceof CLIPSMultifieldVariableElement variable) {
+                        var name = variable.getName();
+                        if (name == null) return PsiReference.EMPTY_ARRAY;
+                        var text = element.getText();
+                        var startOffset = text.startsWith("$?") ? 2 : 0;
+                        var range = new TextRange(startOffset, element.getTextLength());
+                        return new PsiReference[]{ new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE) };
                     }
-                    
-                    System.out.println("[DEBUG_LOG] Not a multifield variable, returning empty array");
                     return PsiReference.EMPTY_ARRAY;
                 }
             }
         );
         
-        // Register reference provider for VARIABLE token
+        // Register reference provider for VARIABLE leaf token
         System.out.println("[DEBUG_LOG] Registering reference provider for VARIABLE token");
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement().withElementType(CLIPSTypes.VARIABLE),
@@ -116,36 +96,71 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
                                                                      @NotNull ProcessingContext context) {
                     System.out.println("[DEBUG_LOG] VARIABLE token reference provider's getReferencesByElement called for: " + element);
-                    System.out.println("[DEBUG_LOG] Element class: " + element.getClass().getName());
-                    System.out.println("[DEBUG_LOG] Element text: " + element.getText());
-                    System.out.println("[DEBUG_LOG] Element language: " + element.getLanguage());
-                    System.out.println("[DEBUG_LOG] Element parent: " + element.getParent());
-                    System.out.println("[DEBUG_LOG] Element parent class: " + (element.getParent() != null ? element.getParent().getClass().getName() : "null"));
-                    
-                    // For VARIABLE token, we need to extract the name (without the '?' prefix)
-                    String text = element.getText();
-                    String name = text.startsWith("?") ? text.substring(1) : text;
-                    System.out.println("[DEBUG_LOG] VARIABLE token name: " + name);
-                    
-                    if (name.isEmpty()) {
-                        System.out.println("[DEBUG_LOG] VARIABLE token name is empty, returning empty array");
-                        return PsiReference.EMPTY_ARRAY;
-                    }
-                    
-                    // For variables, we need to exclude the '?' prefix from the range
-                    int startOffset = text.startsWith("?") ? 1 : 0;
-                    TextRange range = new TextRange(startOffset, element.getTextLength());
-                    System.out.println("[DEBUG_LOG] Creating reference for VARIABLE token: " + element + ", range: " + range + ", name: " + name);
-                    
-                    CLIPSReference reference = new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE);
-                    System.out.println("[DEBUG_LOG] Created VARIABLE token reference: " + reference);
-                    
-                    return new PsiReference[]{reference};
+                    var text = element.getText();
+                    var name = text.startsWith("?") ? text.substring(1) : text;
+                    if (name.isEmpty()) return PsiReference.EMPTY_ARRAY;
+                    var startOffset = text.startsWith("?") ? 1 : 0;
+                    var range = new TextRange(startOffset, element.getTextLength());
+                    return new PsiReference[]{ new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE) };
                 }
             }
         );
         
-        // Register reference provider for parameters
+        // Register reference provider for GLOBAL_VARIABLE leaf token
+        System.out.println("[DEBUG_LOG] Registering reference provider for GLOBAL_VARIABLE token");
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement().withElementType(CLIPSTypes.GLOBAL_VARIABLE),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                                     @NotNull ProcessingContext context) {
+                    System.out.println("[DEBUG_LOG] GLOBAL_VARIABLE token provider called for: " + element);
+                    var text = element.getText();
+                    var core = (text.startsWith("?*") && text.endsWith("*")) ? text.substring(2, text.length() - 1) : text;
+                    if (core.isEmpty()) return PsiReference.EMPTY_ARRAY;
+                    var startOffset = text.startsWith("?*") ? 2 : 0;
+                    var end = text.endsWith("*") ? element.getTextLength() - 1 : element.getTextLength();
+                    var range = new TextRange(startOffset, end);
+                    return new PsiReference[]{ new CLIPSReference(element, range, core, CLIPSReference.ReferenceType.GLOBAL_VARIABLE) };
+                }
+            }
+        );
+        
+        // Register reference provider for IDENTIFIER leaves used as names (def_name)
+        System.out.println("[DEBUG_LOG] Registering reference provider for IDENTIFIER within CLIPSDefName");
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement().withElementType(CLIPSTypes.IDENTIFIER).withParent(CLIPSDefName.class),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                                     @NotNull ProcessingContext context) {
+                    System.out.println("[DEBUG_LOG] IDENTIFIER-in-DefName provider called for: " + element + " text='" + element.getText() + "'");
+                    // Determine context: function call vs pattern head
+                    var inFunction = element.getParent() != null &&
+                                     com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSFunctionCall.class, false) != null;
+                    var type = inFunction ? CLIPSReference.ReferenceType.FUNCTION : CLIPSReference.ReferenceType.TEMPLATE;
+                    var range = TextRange.from(0, element.getTextLength());
+                    return new PsiReference[]{ new CLIPSReference(element, range, element.getText(), type) };
+                }
+            }
+        );
+        
+        // Register reference provider for IDENTIFIER leaves used as slot names
+        System.out.println("[DEBUG_LOG] Registering reference provider for IDENTIFIER within CLIPSSlotName");
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement().withElementType(CLIPSTypes.IDENTIFIER).withParent(CLIPSSlotName.class),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                                     @NotNull ProcessingContext context) {
+                    System.out.println("[DEBUG_LOG] IDENTIFIER-in-SlotName provider called for: " + element + " text='" + element.getText() + "'");
+                    var range = TextRange.from(0, element.getTextLength());
+                    return new PsiReference[]{ new CLIPSReference(element, range, element.getText(), CLIPSReference.ReferenceType.SLOT) };
+                }
+            }
+        );
+        
+        // Register reference provider for parameters (composite PSI element)
         System.out.println("[DEBUG_LOG] Registering reference provider for CLIPSParameter");
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(CLIPSParameter.class),
@@ -154,32 +169,14 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
                                                                      @NotNull ProcessingContext context) {
                     System.out.println("[DEBUG_LOG] Parameter reference provider's getReferencesByElement called for: " + element);
-                    System.out.println("[DEBUG_LOG] Element class: " + element.getClass().getName());
-                    System.out.println("[DEBUG_LOG] Element text: " + element.getText());
-                    
-                    if (element instanceof CLIPSParameter) {
-                        CLIPSParameter parameter = (CLIPSParameter) element;
-                        String name = parameter.getName();
-                        System.out.println("[DEBUG_LOG] Parameter name: " + name);
-                        
-                        if (name == null) {
-                            System.out.println("[DEBUG_LOG] Parameter name is null, returning empty array");
-                            return PsiReference.EMPTY_ARRAY;
-                        }
-                        
-                        // For parameters, we need to exclude the '?' prefix from the range
-                        String text = element.getText();
-                        int startOffset = text.startsWith("?") ? 1 : 0;
-                        TextRange range = new TextRange(startOffset, element.getTextLength());
-                        System.out.println("[DEBUG_LOG] Creating reference for parameter: " + element + ", range: " + range + ", name: " + name);
-                        
-                        CLIPSReference reference = new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE);
-                        System.out.println("[DEBUG_LOG] Created parameter reference: " + reference);
-                        
-                        return new PsiReference[]{reference};
+                    if (element instanceof CLIPSParameter parameter) {
+                        var name = parameter.getName();
+                        if (name == null) return PsiReference.EMPTY_ARRAY;
+                        var text = element.getText();
+                        var startOffset = text.startsWith("?") ? 1 : 0;
+                        var range = new TextRange(startOffset, element.getTextLength());
+                        return new PsiReference[]{ new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE) };
                     }
-                    
-                    System.out.println("[DEBUG_LOG] Not a parameter, returning empty array");
                     return PsiReference.EMPTY_ARRAY;
                 }
             }
