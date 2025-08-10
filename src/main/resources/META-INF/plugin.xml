@@ -55,8 +55,8 @@
             
         <completion.contributor
             language="CLIPS"
-            implementationClass="is.yarr.clips.CLIPSCompletionContributor"/>
-            
+            implementationClass="is.yarr.clips.completion.CLIPSCompletionContributor"/>
+        
         <psi.referenceContributor
             language="CLIPS"
             implementation="is.yarr.clips.CLIPSReferenceContributor"/>
@@ -84,6 +84,8 @@
         <lang.psiStructureViewFactory
             language="CLIPS"
             implementationClass="is.yarr.clips.CLIPSStructureViewFactory"/>
+        
+        <typedHandler implementation="is.yarr.clips.completion.CLIPSTypedHandler"/>
             
         <!-- Ensure leaf tokens participate in reference providers -->
         <lang.ast.factory
