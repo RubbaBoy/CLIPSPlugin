@@ -97,5 +97,6 @@
             enabledByDefault="true"
             level="ERROR"
             implementationClass="is.yarr.clips.CLIPSTemplateSlotInspection"/>
+        <gotoDeclarationHandler implementation="is.yarr.clips.navigation.CLIPSGotoDeclarationHandler"/>
     </extensions>
 </idea-plugin>

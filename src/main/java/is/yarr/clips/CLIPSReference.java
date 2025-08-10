@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -109,43 +110,44 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
      * Finds variable declarations in the current scope.
      */
     private void findVariableDeclarations(Project project, List<ResolveResult> results) {
-        System.out.println("[DEBUG_LOG] findVariableDeclarations called for: element=" + myElement + ", name=" + name);
-        
+
         // Find the containing construct (rule, function, etc.)
         PsiElement scope = findContainingScope(myElement);
-        System.out.println("[DEBUG_LOG] findVariableDeclarations scope: " + scope);
         if (scope == null) {
-            System.out.println("[DEBUG_LOG] findVariableDeclarations: No scope found, returning");
             return;
         }
         
         // Find all variable declarations in the scope
         var variables = PsiTreeUtil.findChildrenOfType(scope, CLIPSVariableElement.class);
-        System.out.println("[DEBUG_LOG] findVariableDeclarations found variables: count=" + variables.size());
-        
+
         for (CLIPSVariableElement variable : variables) {
             String varName = variable.getName();
             boolean isDecl = isDeclaration(variable);
-            System.out.println("[DEBUG_LOG] findVariableDeclarations checking variable: " + variable + ", name=" + varName + ", isDeclaration=" + isDecl);
-            
+
             if (name.equals(varName) && isDecl) {
-                System.out.println("[DEBUG_LOG] findVariableDeclarations found match: " + variable);
                 results.add(new PsiElementResolveResult(variable));
             }
         }
         
         // Also find multifield variable declarations in the scope
         var multifieldVariables = PsiTreeUtil.findChildrenOfType(scope, CLIPSMultifieldVariableElement.class);
-        System.out.println("[DEBUG_LOG] findVariableDeclarations found multifield variables: count=" + multifieldVariables.size());
-        
+
         for (CLIPSMultifieldVariableElement variable : multifieldVariables) {
             String varName = variable.getName();
             boolean isDecl = isMultifieldDeclaration(variable);
-            System.out.println("[DEBUG_LOG] findVariableDeclarations checking multifield variable: " + variable + ", name=" + varName + ", isDeclaration=" + isDecl);
-            
+
             if (name.equals(varName) && isDecl) {
-                System.out.println("[DEBUG_LOG] findVariableDeclarations found multifield match: " + variable);
                 results.add(new PsiElementResolveResult(variable));
+            }
+        }
+
+        var paramDefs = PsiTreeUtil.findChildrenOfType(scope, CLIPSParameter.class);
+
+        for (CLIPSParameter param : paramDefs) {
+            String varName = param.getName();
+
+            if (name.equals(varName)) {
+                results.add(new PsiElementResolveResult(param));
             }
         }
     }
@@ -173,6 +175,9 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         var templates = PsiTreeUtil.findChildrenOfType(file, CLIPSTemplateName.class);
         for (CLIPSTemplateName template : templates) {
             if (name.equals(template.getName())) {
+//                PsiElement idLeaf = template.getNameIdentifier() != null ? template.getNameIdentifier() : template;
+//                results.add(new PsiElementResolveResult(idLeaf));
+
                 results.add(new PsiElementResolveResult(template));
             }
         }
@@ -187,6 +192,8 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         var rules = PsiTreeUtil.findChildrenOfType(file, CLIPSRuleName.class);
         for (CLIPSRuleName rule : rules) {
             if (name.equals(rule.getName())) {
+//                PsiElement idLeaf = rule.getNameIdentifier() != null ? rule.getNameIdentifier() : rule;
+//                results.add(new PsiElementResolveResult(idLeaf));
                 results.add(new PsiElementResolveResult(rule));
             }
         }
@@ -202,6 +209,8 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         for (CLIPSDeffunctionConstruct function : functions) {
             PsiElement nameElement = PsiTreeUtil.findChildOfType(function, CLIPSDefName.class);
             if (nameElement != null && name.equals(nameElement.getText())) {
+//                PsiElement idLeaf = nameElement.getFirstChild() != null ? nameElement.getFirstChild() : nameElement;
+//                results.add(new PsiElementResolveResult(idLeaf));
                 results.add(new PsiElementResolveResult(nameElement));
             }
         }
@@ -230,6 +239,8 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
                 var slots = PsiTreeUtil.findChildrenOfType(template, CLIPSSlotName.class);
                 for (CLIPSSlotName slot : slots) {
                     if (name.equals(slot.getName())) {
+//                        PsiElement idLeaf = slot.getNameIdentifier() != null ? slot.getNameIdentifier() : slot;
+//                        results.add(new PsiElementResolveResult(idLeaf));
                         results.add(new PsiElementResolveResult(slot));
                     }
                 }
@@ -431,19 +442,40 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         
         // Sort the variables by their text offset to find the first occurrence
         List<CLIPSVariableElement> sortedVariables = new ArrayList<>(variables);
-        sortedVariables.sort((v1, v2) -> v1.getTextOffset() - v2.getTextOffset());
+        sortedVariables.sort(Comparator.comparingInt(PsiElement::getTextOffset));
         
         // Check if the given variable is the first occurrence of its name in the scope
         for (CLIPSVariableElement v : sortedVariables) {
             String vName = v.getName();
             int offset = v.getTextOffset();
             System.out.println("[DEBUG_LOG] isDeclaration checking variable: " + v + ", name=" + vName + ", offset=" + offset);
-            
-            if (variableName.equals(vName)) {
-                boolean isFirst = v.equals(variable);
-                System.out.println("[DEBUG_LOG] isDeclaration found matching name: " + v + ", isFirst=" + isFirst);
-                return isFirst;
+
+            if (!variableName.equals(vName)) {
+                System.out.println("cont, variableName=" + variableName + ", vName=" + vName);
+                continue;
             }
+
+            // Special-case: (bind ?name <expr>) — the ?name right after 'bind' is a declaration
+            var parentExpr = PsiTreeUtil.getParentOfType(v, CLIPSFunctionCall.class);
+            if (parentExpr != null) {
+                var firstChild = parentExpr.getFirstChild(); // LPAREN
+                var secondChild = firstChild != null ? firstChild.getNextSibling() : null; // function name token
+                var thirdChild = secondChild != null ? secondChild.getNextSibling() : null; // first argument PSI
+                if (secondChild != null && "bind".equals(secondChild.getText())) {
+                    // The first argument should be this variable leaf or its VariableElement wrapper
+                    if (thirdChild != null && thirdChild.getText().equals("?" + variableName)) {
+                        System.out.println("[DEBUG_LOG] isDeclaration: detected bind declaration for " + variableName);
+                        return v.equals(variable);
+                    }
+                }
+            }
+
+            boolean isFirst = v.equals(variable);
+            if (isFirst) {
+                System.out.println("[DEBUG_LOG] isDeclaration found matching name: " + v + ", isFirst=" + isFirst);
+                return true;
+            }
+//            return isFirst;
         }
         
         System.out.println("[DEBUG_LOG] isDeclaration: No matching variable found, returning false");

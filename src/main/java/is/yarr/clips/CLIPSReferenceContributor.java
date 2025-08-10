@@ -55,9 +55,7 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
                         var name = variable.getName();
                         System.out.println("[DEBUG_LOG] Variable name: " + name);
                         if (name == null) return PsiReference.EMPTY_ARRAY;
-                        var text = element.getText();
-                        var startOffset = text.startsWith("?") ? 1 : 0;
-                        var range = new TextRange(startOffset, element.getTextLength());
+                        var range = TextRange.from(0, element.getTextLength());
                         return new PsiReference[]{ new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE) };
                     }
                     return PsiReference.EMPTY_ARRAY;
@@ -99,8 +97,7 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
                     var text = element.getText();
                     var name = text.startsWith("?") ? text.substring(1) : text;
                     if (name.isEmpty()) return PsiReference.EMPTY_ARRAY;
-                    var startOffset = text.startsWith("?") ? 1 : 0;
-                    var range = new TextRange(startOffset, element.getTextLength());
+                    var range = TextRange.from(0, element.getTextLength());
                     return new PsiReference[]{ new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.VARIABLE) };
                 }
             }

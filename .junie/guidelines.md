@@ -18,6 +18,8 @@ Use the `pdftotext` command to read documentation regarding CLIPS syntax. If you
 
 For reference on grammar, use CLIPSLexer.flex and CLIPSParser.bnf. Do NOT copy them directly, and do NOT copy the classes they use, you must create your own everything from scratch. Simply reference the tokens they use and the grammar for CLIPS syntax. Take any modifiers (like mixins, priorities, etc.) with a grain of salt. Simply use them for knowledge of how the CLIPS language should be parsed. It can do most things the language requires, but later on may need to be expanded.
 
+There is a simple plugin that demonstrated PsiReference usage, along with things like GoToDeclarationHandlers under example_simple_language_plugin. This plugin is a good reference for how to implement PsiReferenceContributor, PsiReference, and PsiReferenceProvider. It should be used as REFERENCE, and nothing more. Do not copy code from it, but rather use it to understand how things work.
+
 ### MCP Servers
 
 #### context7
