@@ -34,6 +34,12 @@ public class CLIPSConstraintImpl extends CLIPSPsiElementImpl implements CLIPSCon
 
   @Override
   @NotNull
+  public List<CLIPSFunctionCall> getFunctionCallList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CLIPSFunctionCall.class);
+  }
+
+  @Override
+  @NotNull
   public List<CLIPSGlobalVariableDef> getGlobalVariableDefList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, CLIPSGlobalVariableDef.class);
   }

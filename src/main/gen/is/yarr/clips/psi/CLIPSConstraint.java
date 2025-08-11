@@ -11,6 +11,9 @@ public interface CLIPSConstraint extends PsiElement {
   List<CLIPSConstant> getConstantList();
 
   @NotNull
+  List<CLIPSFunctionCall> getFunctionCallList();
+
+  @NotNull
   List<CLIPSGlobalVariableDef> getGlobalVariableDefList();
 
   @NotNull

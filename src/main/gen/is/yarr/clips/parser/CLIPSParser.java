@@ -48,6 +48,37 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // LPAREN "and" conditional_element+ RPAREN
+  static boolean and_ce(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "and_ce")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "and");
+    p = r; // pin = 2
+    r = r && report_error_(b, and_ce_2(b, l + 1));
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // conditional_element+
+  private static boolean and_ce_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "and_ce_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = conditional_element(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!conditional_element(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "and_ce_2", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
   // not_constraint (AMPERSAND not_constraint)*
   static boolean and_constraint(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "and_constraint")) return false;
@@ -139,7 +170,7 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // assigned_pattern_CE | pattern_ce | test_ce
+  // assigned_pattern_CE | pattern_ce | test_ce | and_ce | or_ce | not_ce | exists_ce | forall_ce | logical_ce
   static boolean conditional_element(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "conditional_element")) return false;
     if (!nextTokenIs(b, "", LPAREN, VARIABLE)) return false;
@@ -147,6 +178,12 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
     r = assigned_pattern_CE(b, l + 1);
     if (!r) r = pattern_ce(b, l + 1);
     if (!r) r = test_ce(b, l + 1);
+    if (!r) r = and_ce(b, l + 1);
+    if (!r) r = or_ce(b, l + 1);
+    if (!r) r = not_ce(b, l + 1);
+    if (!r) r = exists_ce(b, l + 1);
+    if (!r) r = forall_ce(b, l + 1);
+    if (!r) r = logical_ce(b, l + 1);
     return r;
   }
 
@@ -704,6 +741,37 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // LPAREN "exists" conditional_element+ RPAREN
+  static boolean exists_ce(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "exists_ce")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "exists");
+    p = r; // pin = 2
+    r = r && report_error_(b, exists_ce_2(b, l + 1));
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // conditional_element+
+  private static boolean exists_ce_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "exists_ce_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = conditional_element(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!conditional_element(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "exists_ce_2", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
   // "export" port_item
   public static boolean export_spec(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "export_spec")) return false;
@@ -727,6 +795,38 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
     if (!r) r = multifield_variable_element(b, l + 1);
     if (!r) r = function_call(b, l + 1);
     exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // LPAREN "forall" conditional_element conditional_element+ RPAREN
+  static boolean forall_ce(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "forall_ce")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "forall");
+    p = r; // pin = 2
+    r = r && report_error_(b, conditional_element(b, l + 1));
+    r = p && report_error_(b, forall_ce_3(b, l + 1)) && r;
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // conditional_element+
+  private static boolean forall_ce_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "forall_ce_3")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = conditional_element(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!conditional_element(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "forall_ce_3", c)) break;
+    }
+    exit_section_(b, m, null, r);
     return r;
   }
 
@@ -860,6 +960,37 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // LPAREN "logical" conditional_element+ RPAREN
+  static boolean logical_ce(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logical_ce")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "logical");
+    p = r; // pin = 2
+    r = r && report_error_(b, logical_ce_2(b, l + 1));
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // conditional_element+
+  private static boolean logical_ce_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logical_ce_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = conditional_element(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!conditional_element(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "logical_ce_2", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
   // IDENTIFIER
   public static boolean module_name(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "module_name")) return false;
@@ -912,6 +1043,22 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // LPAREN "not" conditional_element RPAREN
+  static boolean not_ce(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "not_ce")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "not");
+    p = r; // pin = 2
+    r = r && report_error_(b, conditional_element(b, l + 1));
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
   // TILDE? single_field_constraint
   static boolean not_constraint(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "not_constraint")) return false;
@@ -928,6 +1075,130 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "not_constraint_0")) return false;
     consumeToken(b, TILDE);
     return true;
+  }
+
+  /* ********************************************************** */
+  // LPAREN "is-a" constraint RPAREN
+  //   | LPAREN "name" constraint RPAREN
+  //   | LPAREN slot_name constraint* RPAREN
+  static boolean object_attribute_constraint(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_attribute_constraint")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = object_attribute_constraint_0(b, l + 1);
+    if (!r) r = object_attribute_constraint_1(b, l + 1);
+    if (!r) r = object_attribute_constraint_2(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // LPAREN "is-a" constraint RPAREN
+  private static boolean object_attribute_constraint_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_attribute_constraint_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "is-a");
+    r = r && constraint(b, l + 1);
+    r = r && consumeToken(b, RPAREN);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // LPAREN "name" constraint RPAREN
+  private static boolean object_attribute_constraint_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_attribute_constraint_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "name");
+    r = r && constraint(b, l + 1);
+    r = r && consumeToken(b, RPAREN);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // LPAREN slot_name constraint* RPAREN
+  private static boolean object_attribute_constraint_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_attribute_constraint_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, LPAREN);
+    r = r && slot_name(b, l + 1);
+    r = r && object_attribute_constraint_2_2(b, l + 1);
+    r = r && consumeToken(b, RPAREN);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // constraint*
+  private static boolean object_attribute_constraint_2_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_attribute_constraint_2_2")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!constraint(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "object_attribute_constraint_2_2", c)) break;
+    }
+    return true;
+  }
+
+  /* ********************************************************** */
+  // LPAREN "object" object_attribute_constraint* RPAREN
+  static boolean object_pattern_CE(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_pattern_CE")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "object");
+    p = r; // pin = 2
+    r = r && report_error_(b, object_pattern_CE_2(b, l + 1));
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // object_attribute_constraint*
+  private static boolean object_pattern_CE_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_pattern_CE_2")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!object_attribute_constraint(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "object_pattern_CE_2", c)) break;
+    }
+    return true;
+  }
+
+  /* ********************************************************** */
+  // LPAREN "or" conditional_element+ RPAREN
+  static boolean or_ce(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "or_ce")) return false;
+    if (!nextTokenIs(b, LPAREN)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LPAREN);
+    r = r && consumeToken(b, "or");
+    p = r; // pin = 2
+    r = r && report_error_(b, or_ce_2(b, l + 1));
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // conditional_element+
+  private static boolean or_ce_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "or_ce_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = conditional_element(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!conditional_element(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "or_ce_2", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   /* ********************************************************** */
@@ -1017,13 +1288,14 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // ordered_pattern_CE | template_pattern_CE
+  // ordered_pattern_CE | template_pattern_CE | object_pattern_CE
   static boolean pattern_ce(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pattern_ce")) return false;
     if (!nextTokenIs(b, LPAREN)) return false;
     boolean r;
     r = ordered_pattern_CE(b, l + 1);
     if (!r) r = template_pattern_CE(b, l + 1);
+    if (!r) r = object_pattern_CE(b, l + 1);
     return r;
   }
 
@@ -1251,18 +1523,33 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   //   | multifield_variable_element
   //   | global_variable_def
   //   | predicate_constraint
+  //   | EQUALS function_call
   //   | WILDCARD
   //   | MULTIFIELD_WILDCARD
   static boolean single_field_constraint(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "single_field_constraint")) return false;
     boolean r;
+    Marker m = enter_section_(b);
     r = constant(b, l + 1);
     if (!r) r = variable_element(b, l + 1);
     if (!r) r = multifield_variable_element(b, l + 1);
     if (!r) r = global_variable_def(b, l + 1);
     if (!r) r = predicate_constraint(b, l + 1);
+    if (!r) r = single_field_constraint_5(b, l + 1);
     if (!r) r = consumeToken(b, WILDCARD);
     if (!r) r = consumeToken(b, MULTIFIELD_WILDCARD);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // EQUALS function_call
+  private static boolean single_field_constraint_5(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "single_field_constraint_5")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, EQUALS);
+    r = r && function_call(b, l + 1);
+    exit_section_(b, m, null, r);
     return r;
   }
 

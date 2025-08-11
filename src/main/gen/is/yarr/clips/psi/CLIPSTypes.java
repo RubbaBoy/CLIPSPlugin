@@ -53,6 +53,7 @@ public interface CLIPSTypes {
   IElementType BUILTIN_FUNCTION = new CLIPSTokenType("BUILTIN_FUNCTION");
   IElementType COLON = new CLIPSTokenType("COLON");
   IElementType COMMENT = new CLIPSTokenType("COMMENT");
+  IElementType EQUALS = new CLIPSTokenType("EQUALS");
   IElementType GLOBAL_VARIABLE = new CLIPSTokenType("GLOBAL_VARIABLE");
   IElementType IDENTIFIER = new CLIPSTokenType("IDENTIFIER");
   IElementType KEYWORD = new CLIPSTokenType("KEYWORD");

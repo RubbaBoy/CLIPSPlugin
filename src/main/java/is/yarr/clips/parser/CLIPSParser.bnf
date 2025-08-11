@@ -24,6 +24,7 @@
     MULTIFIELD_WILDCARD
     WILDCARD
     MULTIFIELD_VARIABLE
+    EQUALS
   ]
 }
 
@@ -86,6 +87,7 @@ private single_field_constraint ::=
   | multifield_variable_element
   | global_variable_def
   | predicate_constraint
+  | EQUALS function_call
   | WILDCARD
   | MULTIFIELD_WILDCARD
 
@@ -194,12 +196,18 @@ private declaration ::= LPAREN "declare" rule_property+ RPAREN
 private rule_property ::= LPAREN "salience" expression RPAREN
                       | LPAREN "auto-focus" ("TRUE" | "FALSE") RPAREN
 
-private conditional_element ::= assigned_pattern_CE | pattern_ce | test_ce // Simplified, others include and, or, not, etc.
+private conditional_element ::= assigned_pattern_CE | pattern_ce | test_ce | and_ce | or_ce | not_ce | exists_ce | forall_ce | logical_ce
 private assigned_pattern_CE ::= variable_element "<-" pattern_ce {
   pin=1
 }
 private test_ce ::= LPAREN "test" expression RPAREN
-private pattern_ce ::= ordered_pattern_CE | template_pattern_CE
+private and_ce ::= LPAREN "and" conditional_element+ RPAREN { pin=2 }
+private or_ce ::= LPAREN "or" conditional_element+ RPAREN { pin=2 }
+private not_ce ::= LPAREN "not" conditional_element RPAREN { pin=2 }
+private exists_ce ::= LPAREN "exists" conditional_element+ RPAREN { pin=2 }
+private forall_ce ::= LPAREN "forall" conditional_element conditional_element+ RPAREN { pin=2 }
+private logical_ce ::= LPAREN "logical" conditional_element+ RPAREN { pin=2 }
+private pattern_ce ::= ordered_pattern_CE | template_pattern_CE | object_pattern_CE
 
 // An ordered pattern, e.g., (sensor-reading high ?value).
 private ordered_pattern_CE ::= LPAREN def_name constraint* RPAREN
@@ -207,6 +215,13 @@ private ordered_pattern_CE ::= LPAREN def_name constraint* RPAREN
 // A template pattern, e.g., (system-info (cpu-usage ?c) (temp ?t&:(> ?t 90))).
 private template_pattern_CE ::= LPAREN def_name template_slot_pattern+ RPAREN
 private template_slot_pattern ::= LPAREN slot_name constraint* RPAREN
+
+// An object pattern: (object <attribute-constraint>*)
+private object_pattern_CE ::= LPAREN "object" object_attribute_constraint* RPAREN { pin=2 }
+private object_attribute_constraint ::=
+  LPAREN "is-a" constraint RPAREN
+  | LPAREN "name" constraint RPAREN
+  | LPAREN slot_name constraint* RPAREN
 
 // An action on the Right-Hand Side (RHS) of a rule is any valid expression.
 private rhs_action ::= expression

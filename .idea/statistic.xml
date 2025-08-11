@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Statistic">
+    <option name="excludedDirectories">
+      <list>
+        <option value="$PROJECT_DIR$/example_plugin" />
+        <option value="$PROJECT_DIR$/example_simple_lang" />
+        <option value="$PROJECT_DIR$/gen" />
+      </list>
+    </option>
+  </component>
+</project>

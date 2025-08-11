@@ -37,14 +37,17 @@ MULTIFIELD_VARIABLE=\$\?{VAR_SYMBOL}
 VARIABLE=\?{VAR_SYMBOL}
 
 // Keywords
-KEYWORD=defrule|deftemplate|deffacts|deffunction|defmodule|defglobal|defclass|definstances|defmessage-handler|defgeneric|defmethod|import|slot|multislot|declare|salience|auto-focus|and|or|not|test|exists|forall|logical|if|then|else|crlf|t|TRUE|FALSE|nil|type
+KEYWORD=defrule|deftemplate|deffacts|deffunction|defmodule|defglobal|defclass|definstances|defmessage-handler|defgeneric|defmethod|import|slot|multislot|declare|salience|auto-focus|and|or|not|test|exists|forall|logical|object|if|then|else|crlf|t|TRUE|FALSE|nil|type
 
 // Built-in functions
 BUILTIN_FUNCTION=while|loop-for-count|return|progn|progn\$|do|break|switch|case|default|printout|open|close|read|readline|format|tab|assert|retract|modify|duplicate|facts|fact-index|fact-relation|fact-slot-value|str-cat|str-length|str-compare|str-index|sub-string|sym-cat|upcase|lowcase|length|length\$|member|member\$|subseq|subseq\$|nth|nth\$|create\$|delete\$|replace\$|insert\$|explode\$|implode\$|div|mod|max|min|abs|sqrt|exp|log|log10|round|integer|float|bind|exit|halt|clear|reset|watch|unwatch|agenda|rules|run|gensym
 
 // Operators and special symbols
 ARROW_OP==>|<-
-COMPARISON_OP==|<>|\!=|<|>|<=|>=
+// Provide a dedicated token for '=' to support return value constraints in grammar
+EQUALS="="
+// Comparison operators excluding '=' (handled by EQUALS)
+COMPARISON_OP=<>|\!=|<|>|<=|>=
 MATH_OP=\+|-|\*|\/
 LOGICAL_OP=eq|neq
 
@@ -90,6 +93,7 @@ RPAREN=")"
   // Built-in functions and operators
   {BUILTIN_FUNCTION}   { return CLIPSTypes.BUILTIN_FUNCTION; }
   {ARROW_OP}           { return CLIPSTypes.BUILTIN_FUNCTION; }
+  {EQUALS}             { return CLIPSTypes.EQUALS; }
   {COMPARISON_OP}      { return CLIPSTypes.BUILTIN_FUNCTION; }
   {MATH_OP}            { return CLIPSTypes.BUILTIN_FUNCTION; }
   {LOGICAL_OP}         { return CLIPSTypes.BUILTIN_FUNCTION; }
