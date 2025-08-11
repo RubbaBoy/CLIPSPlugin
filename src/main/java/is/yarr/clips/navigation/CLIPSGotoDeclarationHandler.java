@@ -33,6 +33,12 @@ public final class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler
         var leaf = file.findElementAt(offset);
         if (leaf == null) leaf = sourceElement;
 
+        // Avoid fallback if caret is on a declaration site (to prevent self-navigation)
+        if (isDeclarationSite(leaf)) {
+            System.out.println("EMPTY ---------------------------------------------------------------- 111");
+            return PsiElement.EMPTY_ARRAY;
+        }
+
         var targets = resolveFromReferences(leaf);
         if (targets.length > 0) {
             return filterPreferDeclarations(targets);
@@ -42,13 +48,16 @@ public final class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler
         var parent = leaf.getParent();
         if (parent != null) {
             targets = resolveFromReferences(parent);
+
+            if (isDeclarationSite(parent)) {
+                System.out.println("EMPTY ---------------------------------------------------------------- 222");
+                return PsiElement.EMPTY_ARRAY;
+            }
+
             if (targets.length > 0) return filterPreferDeclarations(targets);
         }
 
-        // Avoid fallback if caret is on a declaration site (to prevent self-navigation)
-        if (isDeclarationSite(leaf) || isDeclarationSite(parent)) {
-            return PsiElement.EMPTY_ARRAY;
-        }
+        System.out.println("NOT ---------------------------------------------------------------- here");
 
         // Fallback: synthesize a CLIPSReference from token/context
         var fallback = buildFallbackReference(leaf);
@@ -165,7 +174,8 @@ public final class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler
             var inMulti = PsiTreeUtil.getParentOfType(e, CLIPSMultislotDefinition.class, false) != null;
             if (inSingle || inMulti) return true;
         }
-        return false;
+
+        return e instanceof CLIPSParameter;
     }
 
     private static PsiElement[] filterPreferDeclarations(PsiElement[] targets) {
