@@ -22,4 +22,7 @@ public interface CLIPSDefruleConstruct extends PsiElement {
   @NotNull
   List<CLIPSSlotName> getSlotNameList();
 
+  @NotNull
+  List<CLIPSVariableElement> getVariableElementList();
+
 }

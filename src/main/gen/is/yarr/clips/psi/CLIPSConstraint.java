@@ -14,6 +14,9 @@ public interface CLIPSConstraint extends PsiElement {
   List<CLIPSGlobalVariableDef> getGlobalVariableDefList();
 
   @NotNull
+  List<CLIPSMultifieldVariableElement> getMultifieldVariableElementList();
+
+  @NotNull
   List<CLIPSPredicateConstraint> getPredicateConstraintList();
 
   @NotNull

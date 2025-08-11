@@ -20,6 +20,15 @@ For reference on grammar, use CLIPSLexer.flex and CLIPSParser.bnf. Do NOT copy t
 
 There is a simple plugin that demonstrated PsiReference usage, along with things like GoToDeclarationHandlers under example_simple_language_plugin. This plugin is a good reference for how to implement PsiReferenceContributor, PsiReference, and PsiReferenceProvider. It should be used as REFERENCE, and nothing more. Do not copy code from it, but rather use it to understand how things work.
 
+## Code Generation
+
+After a .bnf or .flex file is modified and it is believed to work, they will need regeneration. This can be done by:
+
+**For .bnf file:**: Run the command `/home/adam/.mcp/generate-parser.sh "absolute path to .bnf file"`
+**For .flex file:**: Run the command `/home/adam/.mcp/generate-lexer.sh "absolute path to .flex file"`
+
+The only argument to both commands is an absolute path to the file. Ensure that the code builds without errors after regeneration.
+
 ### MCP Servers
 
 #### context7

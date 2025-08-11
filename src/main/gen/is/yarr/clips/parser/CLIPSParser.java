@@ -82,6 +82,21 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // variable_element "<-" pattern_ce
+  static boolean assigned_pattern_CE(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "assigned_pattern_CE")) return false;
+    if (!nextTokenIs(b, VARIABLE)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = variable_element(b, l + 1);
+    p = r; // pin = 1
+    r = r && report_error_(b, consumeToken(b, "<-"));
+    r = p && pattern_ce(b, l + 1) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
   // LPAREN "cardinality" cardinality_specification cardinality_specification RPAREN
   public static boolean cardinality_constraint(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "cardinality_constraint")) return false;
@@ -124,12 +139,13 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // pattern_ce | test_ce
+  // assigned_pattern_CE | pattern_ce | test_ce
   static boolean conditional_element(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "conditional_element")) return false;
-    if (!nextTokenIs(b, LPAREN)) return false;
+    if (!nextTokenIs(b, "", LPAREN, VARIABLE)) return false;
     boolean r;
-    r = pattern_ce(b, l + 1);
+    r = assigned_pattern_CE(b, l + 1);
+    if (!r) r = pattern_ce(b, l + 1);
     if (!r) r = test_ce(b, l + 1);
     return r;
   }
@@ -1232,6 +1248,7 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   /* ********************************************************** */
   // constant
   //   | variable_element
+  //   | multifield_variable_element
   //   | global_variable_def
   //   | predicate_constraint
   //   | WILDCARD
@@ -1241,6 +1258,7 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
     boolean r;
     r = constant(b, l + 1);
     if (!r) r = variable_element(b, l + 1);
+    if (!r) r = multifield_variable_element(b, l + 1);
     if (!r) r = global_variable_def(b, l + 1);
     if (!r) r = predicate_constraint(b, l + 1);
     if (!r) r = consumeToken(b, WILDCARD);

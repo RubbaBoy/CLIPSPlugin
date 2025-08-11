@@ -80,9 +80,10 @@ private not_constraint ::= TILDE? single_field_constraint
 predicate_constraint ::= COLON function_call
 
 // A single_field_constraint is the fundamental atom of a constraint expression.
-private single_field_constraint ::=
+private single_field_constraint ::= 
   constant
   | variable_element
+  | multifield_variable_element
   | global_variable_def
   | predicate_constraint
   | WILDCARD
@@ -193,7 +194,10 @@ private declaration ::= LPAREN "declare" rule_property+ RPAREN
 private rule_property ::= LPAREN "salience" expression RPAREN
                       | LPAREN "auto-focus" ("TRUE" | "FALSE") RPAREN
 
-private conditional_element ::= pattern_ce | test_ce // Simplified, others include and, or, not, etc.
+private conditional_element ::= assigned_pattern_CE | pattern_ce | test_ce // Simplified, others include and, or, not, etc.
+private assigned_pattern_CE ::= variable_element "<-" pattern_ce {
+  pin=1
+}
 private test_ce ::= LPAREN "test" expression RPAREN
 private pattern_ce ::= ordered_pattern_CE | template_pattern_CE
 

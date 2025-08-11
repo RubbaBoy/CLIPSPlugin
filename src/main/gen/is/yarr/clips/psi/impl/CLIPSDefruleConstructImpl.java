@@ -56,4 +56,10 @@ public class CLIPSDefruleConstructImpl extends CLIPSPsiElementImpl implements CL
     return PsiTreeUtil.getChildrenOfTypeAsList(this, CLIPSSlotName.class);
   }
 
+  @Override
+  @NotNull
+  public List<CLIPSVariableElement> getVariableElementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CLIPSVariableElement.class);
+  }
+
 }

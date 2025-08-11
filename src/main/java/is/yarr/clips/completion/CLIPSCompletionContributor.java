@@ -95,7 +95,7 @@ public class CLIPSCompletionContributor extends CompletionContributor {
                     // Present
                     addAll(result, items, projectFunctionNames);
 
-                    result.runRemainingContributors(parameters, completionResult -> result.passResult(completionResult));
+                    result.runRemainingContributors(parameters, result::passResult);
                 }
             }
         );

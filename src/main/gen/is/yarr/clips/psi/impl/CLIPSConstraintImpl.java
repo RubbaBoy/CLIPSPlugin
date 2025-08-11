@@ -40,6 +40,12 @@ public class CLIPSConstraintImpl extends CLIPSPsiElementImpl implements CLIPSCon
 
   @Override
   @NotNull
+  public List<CLIPSMultifieldVariableElement> getMultifieldVariableElementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, CLIPSMultifieldVariableElement.class);
+  }
+
+  @Override
+  @NotNull
   public List<CLIPSPredicateConstraint> getPredicateConstraintList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, CLIPSPredicateConstraint.class);
   }
