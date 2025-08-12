@@ -35,12 +35,13 @@ public final class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler
 
         // Avoid fallback if caret is on a declaration site (to prevent self-navigation)
         if (isDeclarationSite(leaf)) {
-            System.out.println("EMPTY ---------------------------------------------------------------- 111");
+            System.out.println("faz EMPTY ---------------------------------------------------------------- 111");
             return PsiElement.EMPTY_ARRAY;
         }
 
         var targets = resolveFromReferences(leaf);
         if (targets.length > 0) {
+            System.out.println("faz targets.length = " + targets.length);
             return filterPreferDeclarations(targets);
         }
 
@@ -50,14 +51,14 @@ public final class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler
             targets = resolveFromReferences(parent);
 
             if (isDeclarationSite(parent)) {
-                System.out.println("EMPTY ---------------------------------------------------------------- 222");
+                System.out.println("faz EMPTY ---------------------------------------------------------------- 222");
                 return PsiElement.EMPTY_ARRAY;
             }
 
             if (targets.length > 0) return filterPreferDeclarations(targets);
         }
 
-        System.out.println("NOT ---------------------------------------------------------------- here");
+        System.out.println("faz NOT ---------------------------------------------------------------- here");
 
         // Fallback: synthesize a CLIPSReference from token/context
         var fallback = buildFallbackReference(leaf);
@@ -67,8 +68,10 @@ public final class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler
 
         if (fallback != null) {
             var resolved = fallback.resolve();
+            System.out.println("faz resolved = " + resolved);
             if (resolved != null) return new PsiElement[]{resolved};
             var extracted = extractElements(fallback.multiResolve(false));
+            System.out.println("faz  EXTRACTED ---------------------------------------------------------------- " + extracted.length);
             return filterPreferDeclarations(extracted);
         }
         return PsiElement.EMPTY_ARRAY;
@@ -123,7 +126,7 @@ public final class CLIPSGotoDeclarationHandler implements GotoDeclarationHandler
             var parent = e.getParent();
             if (parent instanceof CLIPSDefName) {
                 // Determine if this def name belongs to a rule definition (then we use RULE)
-                var inRuleDef = PsiTreeUtil.getParentOfType(parent, CLIPSDefruleConstruct.class, false) != null;
+                var inRuleDef = PsiTreeUtil.getParentOfType(parent, CLIPSRuleName.class, false) != null;
                 if (inRuleDef) {
                     return new CLIPSReference(e, TextRange.from(0, e.getTextLength()), text, CLIPSReference.ReferenceType.RULE);
                 }

@@ -21,6 +21,7 @@ public interface CLIPSTypes {
   IElementType DEFFACTS_NAME = new CLIPSElementType("DEFFACTS_NAME");
   IElementType DEFFACTS_RHS_PATTERN = new CLIPSElementType("DEFFACTS_RHS_PATTERN");
   IElementType DEFFUNCTION_CONSTRUCT = new CLIPSElementType("DEFFUNCTION_CONSTRUCT");
+  IElementType DEFFUNCTION_NAME = new CLIPSElementType("DEFFUNCTION_NAME");
   IElementType DEFGLOBAL_CONSTRUCT = new CLIPSElementType("DEFGLOBAL_CONSTRUCT");
   IElementType DEFMODULE_CONSTRUCT = new CLIPSElementType("DEFMODULE_CONSTRUCT");
   IElementType DEFRULE_CONSTRUCT = new CLIPSElementType("DEFRULE_CONSTRUCT");
@@ -109,6 +110,9 @@ public interface CLIPSTypes {
       }
       else if (type == DEFFUNCTION_CONSTRUCT) {
         return new CLIPSDeffunctionConstructImpl(node);
+      }
+      else if (type == DEFFUNCTION_NAME) {
+        return new CLIPSDeffunctionNameImpl(node);
       }
       else if (type == DEFGLOBAL_CONSTRUCT) {
         return new CLIPSDefglobalConstructImpl(node);

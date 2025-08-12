@@ -63,6 +63,10 @@ public class CLIPSVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitDeffunctionName(@NotNull CLIPSDeffunctionName o) {
+    visitNamedElement(o);
+  }
+
   public void visitDefglobalConstruct(@NotNull CLIPSDefglobalConstruct o) {
     visitPsiElement(o);
   }

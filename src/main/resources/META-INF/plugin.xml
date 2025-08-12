@@ -49,9 +49,9 @@
         <colorSettingsPage
             implementation="is.yarr.clips.CLIPSColorSettingsPage"/>
             
-        <annotator
-            language="CLIPS"
-            implementationClass="is.yarr.clips.CLIPSAnnotator"/>
+<!--        <annotator-->
+<!--            language="CLIPS"-->
+<!--            implementationClass="is.yarr.clips.CLIPSAnnotator"/>-->
             
         <completion.contributor
             language="CLIPS"
@@ -100,5 +100,8 @@
             level="ERROR"
             implementationClass="is.yarr.clips.CLIPSTemplateSlotInspection"/>
         <gotoDeclarationHandler implementation="is.yarr.clips.navigation.CLIPSGotoDeclarationHandler"/>
+        
+        <!-- Caret-based usage highlighting for function calls and declarations -->
+        <highlightUsagesHandlerFactory implementation="is.yarr.clips.highlight.CLIPSHighlightUsagesHandlerFactory"/>
     </extensions>
 </idea-plugin>

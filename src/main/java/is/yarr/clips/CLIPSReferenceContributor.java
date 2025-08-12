@@ -9,6 +9,7 @@ import com.intellij.psi.PsiReferenceProvider;
 import com.intellij.psi.PsiReferenceRegistrar;
 import com.intellij.util.ProcessingContext;
 import is.yarr.clips.psi.*;
+import is.yarr.clips.psi.impl.CLIPSDeffunctionNameImpl;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -20,21 +21,21 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         System.out.println("[DEBUG_LOG] CLIPSReferenceContributor.registerReferenceProviders called");
         // Diagnostic: broad language-scoped provider to verify contributor is firing
-        registrar.registerReferenceProvider(
-            PlatformPatterns.psiElement().withLanguage(CLIPSLanguage.INSTANCE),
-            new PsiReferenceProvider() {
-                @Override
-                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
-                                                                       @NotNull ProcessingContext context) {
-                    var node = element.getNode();
-                    var elemType = node != null ? node.getElementType() : null;
-                    var parent = element.getParent();
-                    System.out.println("[DEBUG_LOG] [Diag] ReferenceContributor queried: text='" + element.getText() + "', type=" + elemType +
-                            ", elemClass=" + element.getClass().getName() + ", parentClass=" + (parent != null ? parent.getClass().getName() : "null"));
-                    return PsiReference.EMPTY_ARRAY; // no-op; specific providers below will still run
-                }
-            }
-        );
+//        registrar.registerReferenceProvider(
+//            PlatformPatterns.psiElement().withLanguage(CLIPSLanguage.INSTANCE),
+//            new PsiReferenceProvider() {
+//                @Override
+//                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+//                                                                       @NotNull ProcessingContext context) {
+//                    var node = element.getNode();
+//                    var elemType = node != null ? node.getElementType() : null;
+//                    var parent = element.getParent();
+//                    System.out.println("[DEBUG_LOG] [Diag] ReferenceContributor queried: text='" + element.getText() + "', type=" + elemType +
+//                            ", elemClass=" + element.getClass().getName() + ", parentClass=" + (parent != null ? parent.getClass().getName() : "null"));
+//                    return PsiReference.EMPTY_ARRAY; // no-op; specific providers below will still run
+//                }
+//            }
+//        );
         
         // Register reference provider for variables (composite PSI element)
         System.out.println("[DEBUG_LOG] Registering reference provider for CLIPSVariableElement");
@@ -123,21 +124,65 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
             }
         );
         
-        // Register reference provider for IDENTIFIER leaves used as names (def_name)
-        System.out.println("[DEBUG_LOG] Registering reference provider for IDENTIFIER within CLIPSDefName");
+        // Register reference provider for function call head IDENTIFIER (def_name inside CLIPSFunctionCall)
+        System.out.println("[DEBUG_LOG] Registering reference provider for function definition head IDENTIFIER");
         registrar.registerReferenceProvider(
-            PlatformPatterns.psiElement().withElementType(CLIPSTypes.IDENTIFIER).withParent(CLIPSDefName.class),
+            PlatformPatterns.psiElement()
+                .withElementType(CLIPSTypes.IDENTIFIER)
+                .withParent(CLIPSDeffunctionNameImpl.class),
             new PsiReferenceProvider() {
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
                                                                      @NotNull ProcessingContext context) {
-                    System.out.println("[DEBUG_LOG] IDENTIFIER-in-DefName provider called for: " + element + " text='" + element.getText() + "'");
-                    // Determine context: function call vs pattern head
-                    var inFunction = element.getParent() != null &&
-                                     com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSFunctionCall.class, false) != null;
-                    var type = inFunction ? CLIPSReference.ReferenceType.FUNCTION : CLIPSReference.ReferenceType.TEMPLATE;
+                    // Ensure we're truly at the call head (first token of function_name)
+//                    var defName = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSDefName.class, false);
+//                    if (defName == null) return PsiReference.EMPTY_ARRAY;
+                    // Avoid declaration site
+//                    if (com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSDeffunctionConstruct.class, false) != null) {
+//                        return PsiReference.EMPTY_ARRAY;
+//                    }
+                    System.out.println("[DEBUG_LOG] Function Def-head IDENTIFIER provider called for: " + element + " text='" + element.getText() + "'");
                     var range = TextRange.from(0, element.getTextLength());
-                    return new PsiReference[]{ new CLIPSReference(element, range, element.getText(), type) };
+                    return new PsiReference[]{ new CLIPSReference(element, range, element.getText(), CLIPSReference.ReferenceType.FUNCTION, true) };
+                }
+            }
+        );
+
+        // Register reference provider for IDENTIFIER leaves used as names (flexible)
+        System.out.println("[DEBUG_LOG] Registering reference provider for IDENTIFIER names (flexible)");
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement()
+                    .withElementType(CLIPSTypes.IDENTIFIER),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                                     @NotNull ProcessingContext context) {
+                    // Context booleans
+                    var inFuncCall = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSFunctionCall.class, false) != null;
+                    var inDefFunction = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSDeffunctionConstruct.class, false) != null;
+                    var inDefTemplate = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSDeftemplateConstruct.class, false) != null;
+                    var inDefRule = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSDefruleConstruct.class, false) != null;
+
+                    // Exclude declaration sites for identifiers
+                    if (!inFuncCall && (inDefFunction || inDefTemplate || inDefRule)) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
+
+                    // Only produce FUNCTION refs for identifiers that are def_name in function calls
+                    if (inFuncCall && com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSDefName.class, false) != null) {
+                        System.out.println("[DEBUG_LOG] IDENTIFIER FUNCTION ref created for: '" + element.getText() + "'");
+                        var range = TextRange.from(0, element.getTextLength());
+                        return new PsiReference[]{ new CLIPSReference(element, range, element.getText(), CLIPSReference.ReferenceType.FUNCTION) };
+                    }
+
+                    // Otherwise, if this is a template/pattern head context, create TEMPLATE refs
+                    if (!inFuncCall && com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, CLIPSDefName.class, false) != null) {
+                        System.out.println("[DEBUG_LOG] IDENTIFIER TEMPLATE ref created for: '" + element.getText() + "'");
+                        var range = TextRange.from(0, element.getTextLength());
+                        return new PsiReference[]{ new CLIPSReference(element, range, element.getText(), CLIPSReference.ReferenceType.TEMPLATE) };
+                    }
+
+                    return PsiReference.EMPTY_ARRAY;
                 }
             }
         );

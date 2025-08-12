@@ -296,6 +296,28 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(IDENTIFIER);
         return child != null ? child.getPsi() : element;
     }
+
+    /**
+     * Gets the name of a deffunction name.
+     */
+    public static String getName(CLIPSDeffunctionName element) {
+        return element.getText();
+    }
+
+    /**
+     * Sets the name of a deffunction name.
+     */
+    public static PsiElement setName(CLIPSDeffunctionName element, @NotNull String name) throws IncorrectOperationException {
+        throw new IncorrectOperationException("Rename not implemented");
+    }
+
+    /**
+     * Gets the name identifier of a deffunction name.
+     */
+    public static PsiElement getNameIdentifier(CLIPSDeffunctionName element) {
+        var child = element.getNode().findChildByType(IDENTIFIER);
+        return child != null ? child.getPsi() : element;
+    }
     
     /**
      * Gets the name of a multifield variable element.

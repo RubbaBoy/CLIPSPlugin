@@ -41,27 +41,19 @@ public class CLIPSFindUsagesProvider implements FindUsagesProvider {
     @NotNull
     @Override
     public String getType(@NotNull PsiElement element) {
-        if (element instanceof CLIPSVariableElement) {
-            return "variable";
-        } else if (element instanceof CLIPSGlobalVariableDef) {
-            return "global variable";
-        } else if (element instanceof CLIPSTemplateName) {
-            return "template";
-        } else if (element instanceof CLIPSRuleName) {
-            return "rule";
-        } else if (element instanceof CLIPSSlotName) {
-            return "slot";
-        } else if (element instanceof CLIPSParameter) {
-            return "parameter";
-        } else if (element instanceof CLIPSModuleName) {
-            return "module";
-        } else if (element instanceof CLIPSClassName) {
-            return "class";
-        } else if (element instanceof CLIPSDeffactsName) {
-            return "deffacts";
-        } else {
-            return "element";
-        }
+        return switch (element) {
+            case CLIPSVariableElement clipsVariableElement -> "variable";
+            case CLIPSGlobalVariableDef clipsGlobalVariableDef -> "global variable";
+            case CLIPSTemplateName clipsTemplateName -> "template";
+            case CLIPSRuleName clipsRuleName -> "rule";
+            case CLIPSSlotName clipsSlotName -> "slot";
+            case CLIPSParameter clipsParameter -> "parameter";
+            case CLIPSModuleName clipsModuleName -> "module";
+            case CLIPSClassName clipsClassName -> "class";
+            case CLIPSDeffactsName clipsDeffactsName -> "deffacts";
+            case CLIPSDeffunctionName clipsDeffunctionName -> "function";
+            default -> "element";
+        };
     }
 
     @NotNull

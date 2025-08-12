@@ -18,14 +18,18 @@ public class CLIPSAstFactory extends ASTFactory {
   @Override
   public @Nullable LeafElement createLeaf(@NotNull IElementType type, @NotNull CharSequence text) {
     if (type == CLIPSTypes.IDENTIFIER) {
+        System.out.println("[CLIPSAstFactory] createLeaf IDENTIFIER: '" + text + "'");
       return new CLIPSIdentifierLeaf(type, text);
     }
     if (type == CLIPSTypes.VARIABLE) {
+        System.out.println("[CLIPSAstFactory] createLeaf VARIABLE: '" + text + "'");
       return new CLIPSVariableLeaf(type, text);
     }
     if (type == CLIPSTypes.GLOBAL_VARIABLE) {
+        System.out.println("[CLIPSAstFactory] createLeaf GLOBAL_VARIABLE: '" + text + "'");
       return new CLIPSGlobalVariableLeaf(type, text);
     }
+      System.out.println("[CLIPSAstFactory] createLeaf other: '" + text + "'");
     return null; // delegate to default for all other token types
   }
 }

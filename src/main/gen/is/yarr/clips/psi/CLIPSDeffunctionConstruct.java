@@ -8,25 +8,13 @@ import com.intellij.psi.PsiElement;
 public interface CLIPSDeffunctionConstruct extends PsiElement {
 
   @Nullable
-  CLIPSDefName getDefName();
+  CLIPSDeffunctionName getDeffunctionName();
 
   @NotNull
   List<CLIPSExpression> getExpressionList();
 
   @Nullable
-  CLIPSGlobalVariableDef getGlobalVariableDef();
-
-  @Nullable
   CLIPSParameterList getParameterList();
-
-  @Nullable
-  CLIPSVariableElement getVariableElement();
-
-  @Nullable
-  PsiElement getBuiltinFunction();
-
-  @Nullable
-  PsiElement getKeyword();
 
   @Nullable
   PsiElement getMultifieldVariable();

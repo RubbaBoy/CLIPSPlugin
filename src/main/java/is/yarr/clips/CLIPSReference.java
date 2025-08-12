@@ -22,6 +22,7 @@ import java.util.List;
 public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private final String name;
     private final ReferenceType type;
+    private final boolean functionDef;
 
     /**
      * Enum to distinguish between different types of references.
@@ -44,9 +45,22 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
      * @param type The type of the reference
      */
     public CLIPSReference(@NotNull PsiElement element, TextRange textRange, String name, ReferenceType type) {
+        this(element, textRange, name, type, false);
+    }
+
+    /**
+     * Creates a new CLIPS reference.
+     *
+     * @param element The element that contains the reference
+     * @param textRange The text range within the element that represents the reference
+     * @param name The name of the referenced element
+     * @param type The type of the reference
+     */
+    public CLIPSReference(@NotNull PsiElement element, TextRange textRange, String name, ReferenceType type, boolean isFuncDef) {
         super(element, textRange);
         this.name = name;
         this.type = type;
+        this.functionDef = isFuncDef;
         System.out.println("[DEBUG_LOG] Created CLIPSReference: element=" + element + ", textRange=" + textRange + ", name=" + name + ", type=" + type);
         System.out.println("[DEBUG_LOG] Element text: " + element.getText() + ", textRange text: " + element.getText().substring(textRange.getStartOffset(), textRange.getEndOffset()));
     }
@@ -60,6 +74,9 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
      */
     @Override
     public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
+        if (functionDef) {
+            System.out.println("CLIPSReference.multiResolve FUNCTION DEF: element=" + myElement + ", name=" + name + ", type=" + type);
+        }
         System.out.println("[DEBUG_LOG] multiResolve called for: element=" + myElement + ", name=" + name + ", type=" + type);
         System.out.println("[DEBUG_LOG] multiResolve element class: " + myElement.getClass().getName());
         System.out.println("[DEBUG_LOG] multiResolve element text: " + myElement.getText());
@@ -76,10 +93,12 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
             case FUNCTION -> findFunctionDeclarations(project, results);
             case SLOT -> findSlotDeclarations(project, results);
         }
-        
-        System.out.println("[DEBUG_LOG] multiResolve results: count=" + results.size() + ", results=" + results);
-        for (ResolveResult result : results) {
-            System.out.println("[DEBUG_LOG] multiResolve result: " + result + ", element=" + result.getElement());
+
+        if (functionDef) {
+            System.out.println("[DEBUG_LOG] FUNC DEF:: multiResolve results: count=" + results.size() + ", results=" + results);
+            for (ResolveResult result : results) {
+                System.out.println("[DEBUG_LOG] multiResolve result: " + result + ", element=" + result.getElement());
+            }
         }
         return results.toArray(new ResolveResult[0]);
     }
@@ -203,14 +222,14 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
      * Finds function declarations in the file.
      */
     private void findFunctionDeclarations(Project project, List<ResolveResult> results) {
+        System.out.println("CLIPSReference.findFunctionDeclarations");
         // Find all function declarations in the file
         PsiFile file = myElement.getContainingFile();
         var functions = PsiTreeUtil.findChildrenOfType(file, CLIPSDeffunctionConstruct.class);
         for (CLIPSDeffunctionConstruct function : functions) {
-            PsiElement nameElement = PsiTreeUtil.findChildOfType(function, CLIPSDefName.class);
+            PsiElement nameElement = PsiTreeUtil.findChildOfType(function, CLIPSDeffunctionName.class);
+            System.out.println("CLIPSReference.findFunctionDeclarations: function=" + function + ", nameElement=" + nameElement + ", name=" + name);
             if (nameElement != null && name.equals(nameElement.getText())) {
-//                PsiElement idLeaf = nameElement.getFirstChild() != null ? nameElement.getFirstChild() : nameElement;
-//                results.add(new PsiElementResolveResult(idLeaf));
                 results.add(new PsiElementResolveResult(nameElement));
             }
         }

@@ -239,7 +239,7 @@ deffacts_name ::= IDENTIFIER {
 
 deffacts_rhs_pattern ::= LPAREN def_name expression* RPAREN
 
-deffunction_construct ::= LPAREN "deffunction" function_name [STRING]
+deffunction_construct ::= LPAREN "deffunction" deffunction_name [STRING]
                             LPAREN parameter_list [MULTIFIELD_VARIABLE] RPAREN
                             rhs_action*
                           RPAREN {
@@ -289,6 +289,13 @@ defclass_construct ::= LPAREN "defclass" class_name [STRING]
 }
 
 class_name ::= IDENTIFIER {
+    mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
+    implements="is.yarr.clips.psi.CLIPSNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+// --- Named element for deffunction declarations ---
+deffunction_name ::= IDENTIFIER {
     mixin="is.yarr.clips.psi.impl.CLIPSNamedElementImpl"
     implements="is.yarr.clips.psi.CLIPSNamedElement"
     methods=[getName setName getNameIdentifier]

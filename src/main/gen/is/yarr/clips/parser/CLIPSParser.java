@@ -508,7 +508,7 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // LPAREN "deffunction" function_name [STRING]
+  // LPAREN "deffunction" deffunction_name [STRING]
   //                             LPAREN parameter_list [MULTIFIELD_VARIABLE] RPAREN
   //                             rhs_action*
   //                           RPAREN
@@ -520,7 +520,7 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, LPAREN);
     r = r && consumeToken(b, "deffunction");
     p = r; // pin = 2
-    r = r && report_error_(b, function_name(b, l + 1));
+    r = r && report_error_(b, deffunction_name(b, l + 1));
     r = p && report_error_(b, deffunction_construct_3(b, l + 1)) && r;
     r = p && report_error_(b, consumeToken(b, LPAREN)) && r;
     r = p && report_error_(b, parameter_list(b, l + 1)) && r;
@@ -555,6 +555,18 @@ public class CLIPSParser implements PsiParser, LightPsiParser {
       if (!empty_element_parsed_guard_(b, "deffunction_construct_8", c)) break;
     }
     return true;
+  }
+
+  /* ********************************************************** */
+  // IDENTIFIER
+  public static boolean deffunction_name(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "deffunction_name")) return false;
+    if (!nextTokenIs(b, IDENTIFIER)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, IDENTIFIER);
+    exit_section_(b, m, DEFFUNCTION_NAME, r);
+    return r;
   }
 
   /* ********************************************************** */

@@ -28,8 +28,8 @@ public class CLIPSDeffunctionConstructImpl extends CLIPSPsiElementImpl implement
 
   @Override
   @Nullable
-  public CLIPSDefName getDefName() {
-    return findChildByClass(CLIPSDefName.class);
+  public CLIPSDeffunctionName getDeffunctionName() {
+    return findChildByClass(CLIPSDeffunctionName.class);
   }
 
   @Override
@@ -40,32 +40,8 @@ public class CLIPSDeffunctionConstructImpl extends CLIPSPsiElementImpl implement
 
   @Override
   @Nullable
-  public CLIPSGlobalVariableDef getGlobalVariableDef() {
-    return findChildByClass(CLIPSGlobalVariableDef.class);
-  }
-
-  @Override
-  @Nullable
   public CLIPSParameterList getParameterList() {
     return findChildByClass(CLIPSParameterList.class);
-  }
-
-  @Override
-  @Nullable
-  public CLIPSVariableElement getVariableElement() {
-    return findChildByClass(CLIPSVariableElement.class);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getBuiltinFunction() {
-    return findChildByType(BUILTIN_FUNCTION);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getKeyword() {
-    return findChildByType(KEYWORD);
   }
 
   @Override
