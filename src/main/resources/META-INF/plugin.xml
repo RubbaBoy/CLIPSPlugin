@@ -100,7 +100,7 @@
             level="ERROR"
             implementationClass="is.yarr.clips.CLIPSTemplateSlotInspection"/>
         <gotoDeclarationHandler implementation="is.yarr.clips.navigation.CLIPSGotoDeclarationHandler"/>
-        
+
         <!-- Caret-based usage highlighting for function calls and declarations -->
         <highlightUsagesHandlerFactory implementation="is.yarr.clips.highlight.CLIPSHighlightUsagesHandlerFactory"/>
     </extensions>

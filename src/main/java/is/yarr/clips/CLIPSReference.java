@@ -125,6 +125,14 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         return variants.toArray();
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public ReferenceType getType() {
+        return type;
+    }
+
     /**
      * Finds variable declarations in the current scope.
      */
@@ -356,7 +364,7 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
         PsiFile file = myElement.getContainingFile();
         var functions = PsiTreeUtil.findChildrenOfType(file, CLIPSDeffunctionConstruct.class);
         for (CLIPSDeffunctionConstruct function : functions) {
-            PsiElement nameElement = PsiTreeUtil.findChildOfType(function, CLIPSDefName.class);
+            PsiElement nameElement = PsiTreeUtil.findChildOfType(function, CLIPSDeffunctionName.class);
             if (nameElement != null) {
                 variants.add(LookupElementBuilder
                     .create(nameElement.getText())

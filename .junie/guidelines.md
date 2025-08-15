@@ -1,158 +1,100 @@
 # Project Development Guidelines
 
-- Use the latest 22 java features possible
-- Use `var` for variables
-- Do NOT use Lombok
-- When referencing Kotlin, convert to Java 22
-- Use packages only when necessary
-- Ensure clean, modular code with documentation for methods. Do not go overboard with comments in the body of the code
-- Prioritize readability, but the code should be concise but not to the point where it affects readability.
-- Use the latest and most sensible ways of doing things
-- NEVER MODIFY GENERATED CODE MANUALLY. Use the Code Generation section below
-- Before a task is done, unless specified otherwise, **ensure it builds with the IDE without errors**
-- If unsure about something, ask the user for clarification. Always check your worn, and if unsure, ask the user for confirmation or clarification.
+## Java Code Guidelines
+- Use the latest available Java 22 features wherever applicable.
+- Declare variables with `var` when possible.
+- Do not use Lombok under any circumstance.
+- When referencing Kotlin code, always convert it to equivalent Java 22.
+- Use packages only when necessary; avoid unnecessary package nesting.
+- Write clean, modular code. Document all methods, but avoid excessive in-line comments.
+- Prioritize code readability, balancing conciseness and clarity.
+- Employ up-to-date, sensible solutions for all problems.
+- Never manually modify generated code. Always use the prescribed Code Generation process.
+- Before marking any task as complete (unless instructions specify otherwise), ensure the project builds in the IDE with no errors.
+- If there is any uncertainty, confirm with the user for clarification. Always review your work before submission.
 
-## Using References
-
-Use the `pdftotext` command to read documentation regarding CLIPS syntax. If you are unsure about CLIPS syntax, take it from the document in `/e/CLIPSPluginScratch/reference/CLIPS_Reference_Manual.pdf`. Be sure you read as much as necessary, use the table of contents (pages 3-14) as necessary to tell you what pages are necessary. 
-
-For reference on grammar, use CLIPSLexer.flex and CLIPSParser.bnf. Do NOT copy them directly, and do NOT copy the classes they use, you must create your own everything from scratch. Simply reference the tokens they use and the grammar for CLIPS syntax. Take any modifiers (like mixins, priorities, etc.) with a grain of salt. Simply use them for knowledge of how the CLIPS language should be parsed. It can do most things the language requires, but later on may need to be expanded.
-
-There is a simple plugin that demonstrated PsiReference usage, along with things like GoToDeclarationHandlers under example_simple_language_plugin. This plugin is a good reference for how to implement PsiReferenceContributor, PsiReference, and PsiReferenceProvider. It should be used as REFERENCE, and nothing more. Do not copy code from it, but rather use it to understand how things work.
+## Reference Usage
+- Use the `pdftotext` command to consult documentation on CLIPS syntax as needed. For CLIPS syntax reference, consult `/e/CLIPSPluginScratch/reference/CLIPS_Reference_Manual.pdf`. Use the table of contents (pages 3–14) to navigate efficiently.
+- For CLIPS grammar, refer to `CLIPSLexer.flex` and `CLIPSParser.bnf`. Do NOT copy these files or their classes; instead, use them to understand tokenization and grammar structure, and implement your own from scratch. Refer to modifiers and advanced features for understanding only, to aid extensibility.
+- The simple example plugin under `example_simple_language_plugin` demonstrates PsiReference usage and relevant handlers. Reference its structure only—do not copy any code. Use it solely to learn about implementation patterns (e.g., `PsiReferenceContributor`, `PsiReference`, `PsiReferenceProvider`).
 
 ## Code Generation
-
-After a .bnf or .flex file is modified and it is believed to work, they will need regeneration. This can be done by:
-
-**For .bnf file:**: Run the command `/home/adam/.mcp/generate-parser.sh "absolute path to .bnf file"`
-**For .flex file:**: Run the command `/home/adam/.mcp/generate-lexer.sh "absolute path to .flex file"`
-
-The only argument to both commands is an absolute path to the file. Ensure that the code builds without errors after regeneration.
+- After modifying a `.bnf` or `.flex` file, regenerate code as follows:
+    - For `.bnf`: Run `/home/adam/.mcp/generate-parser.sh "absolute path to .bnf file"`
+    - For `.flex`: Run `/home/adam/.mcp/generate-lexer.sh "absolute path to .flex file"`
+- The only argument for both commands is the absolute path to the file.
+- Ensure the project builds without errors after generation.
 
 ### MCP Servers
-
-#### context7
-
-Use context7 for all documentation regarding the IntelliJ SDK (jetbrains/intellij-sdk-docs), and reference the IntelliJ IDE Starter (jetbrains/intellij-ide-starter). If completely unsure about something, reference docs from other plugins.
+- Use `context7` for all IntelliJ SDK documentation and as a reference for the IntelliJ IDE Starter. If information is not available, consider consulting documentation from other plugins.
 
 ### Example Plugin
-There is an example plugin under the `example_plugin` directory. This should be treated as a separate, frozen codebase
-simply for reference. It is not to be used as a base for new plugins, but rather as a guide for how to structure and implement features in a plugin.
-The example plugin implements a "simple" language plugin, which serves as a reference for creating new language plugins.
+- The `example_plugin` directory contains a standalone example plugin. It is strictly for reference on project structure and implementation, not for direct reuse or codebase extension.
+- This example implements a basic language plugin to serve as a guide for new plugin development.
 
 ## Project Context
+This project adds language support for the CLIPS programming language within the IntelliJ Platform, processing `.clp` files.
+- A generated parser from a `.bnf` grammar and a lexer from a `.flex` file provide the basis for syntax highlighting.
+- PSI (Program Structure Interface) is used throughout: `PsiReferences` are created for language elements such as local/global variables, templates, functions, and named constructs. This enables:
+    - **Code Navigation**: Jump from symbol usage to declaration (Go to Definition)
+    - **Usage Highlighting**: Highlight all occurrences of a symbol within scope
+    - **Refactoring**: Enable scope-aware renaming of symbols
+    - **Semantic Analysis**: Validate template assertions for correct names and value types
+- All reference resolution is managed via `PsiReferenceContributor`, adhering to JetBrains plugin best practices. Reference other plugins only to learn established conventions.
 
-This project provides language support for the CLIPS programming language within the IntelliJ Platform. It is designed to handle files with the `.clp` extension.
+# Workflow
 
-The plugin's core functionality is built upon a parser generated from a `.bnf` grammar file and a lexer created from a `.flex` file. This foundation enables standard syntax highlighting for CLIPS code.
+Begin with a concise checklist (3-7 bullets) of what you will do; keep items conceptual, not implementation-level.
 
-A key architectural component is the implementation of the Program Structure Interface (PSI). `PsiReferences` are established for various language elements, including local variables, global variables, templates, functions, and other named constructs. This allows for robust code intelligence features:
+Replace previous workflows with the following steps:
 
-- **Code Navigation:** Users can navigate from a symbol's usage to its declaration using a Ctrl/Middle-click ("Go to Definition").
-- **Usage Highlighting:** Clicking on a variable or named item highlights all its occurrences within the current scope.
-- **Refactoring:** Scope-aware renaming of variables and other named items is supported.
-- **Semantic Analysis:** The plugin performs validation when a template is asserted (instantiated), checking that the provided slot names and the types of their assigned values are correct according to the template's definition.
+1. Review the `<issue_description>`.
+2. If the user requests a specific workflow, follow the matching detailed workflow below:
+    - Review Workflow
+    - Planning Workflow
+    - Features Workflow
+    - Implementation Workflow
+3. If the user does not request a workflow, default to the Review Workflow.
 
-The implementation of `PsiReferenceContributor` is central to the reference resolution system. The project adheres to the standards and best practices for JetBrains plugin development, using established reference plugins as a guide.
+**Important:** Complete all steps defined in `<PLAN>`, including changes added during workflow progression.
 
-# WORKFLOW
-
-Replace the previously stated workflow with the following:
-
-1. Review the `<issue_description>`
-2. If the user explicitly requests a workflow from the following list, use the appropriate workflow detailed below:
-    1. Review Workflow
-    2. Planning Workflow
-    3. Features Workflow
-    4. Implementation Workflow
-3. If the user was not explicit, continue with the review workflow.
-
-IMPORTANT: You MUST complete all steps in the `<PLAN>`, including steps added as the workflows progress.
-
-Workflow Pre-Approval: If the `<initial_description>` explicitly indicates pre-approval of any workflows, then skip the 'ask the user' step and assume confirmation was given
-
-If `<issue_description>` directly contradicts any of these steps, follow the instructions from `<issue_description>` first.
+- If `<initial_description>` pre-approves any workflow, skip user confirmation and proceed directly.
+- If `<issue_description>` contradicts these instructions, always give priority to it.
 
 ## Review Workflow
-
-Incorporate the following steps into the `<PLAN>` as a top level item called 'Review.md'
-
-1. Thoroughly review `<issue_description>`, considering both the simplest solution and a comprehensive range of edge cases.
-2. Review the project’s codebase, examining not only its structure but also the specific implementation details, to identify all segments that may contribute to or help resolve the issue described in `<issue_description>`.
-3. Ask the user to confirm or revise an outline plan defining the scope of work as an enumerated list
-4. If the user provides revisions, incorporate the revisions into the `<issue_description>` and continue review from step 1
-5. If the user confirms the outline plan, continue with the planning workflow
+Add the following to the `<PLAN>` as 'Review.md':
+1. Thoroughly review `<issue_description>` with consideration for quick fixes and broader edge cases.
+2. Review the full codebase structure and details relevant to `<issue_description>`.
+3. Ask the user to confirm or revise an enumerated outline plan.
+4. If revised, update `<issue_description>` and repeat review.
+5. Upon user confirmation, move to Planning Workflow.
 
 ## Planning Workflow
-
-Incorporate the following steps into the `<PLAN>` as a top level item called 'Planning'
-
-1. Write a comprehensive plan based on the `<issue_description>` and the project review to the Plans Directory
-2. Ask the user to review the plan and confirm or revise the plan.
-3. If the user revises the plan, incorporate those into the `<issue_description>` and continue planning from step 1
-4. If the user confirms the plan, incorporate the plan into the `<PLAN>` and continue with the features workflow
-
-## Features Workflow
-
-Incorporate the following steps into the `<PLAN>` as a top level item called 'Features'
-
-1. Write comprehensive acceptance tests beneath the Features Directory that describes the desired outcome from addressing the `<issue_description>` and incorporating the plan
-2. Ask the user to review the acceptance tests and confirm or revise the features.
-3. If the user revises the features, incorporate those into the `<issue_description>` and continue features from step 1
-4. If the user confirms the plan, continue with the implementation workflow
+Add the following to `<PLAN>` as 'Planning':
+1. Produce a comprehensive plan based on `<issue_description>` and your project review in the `plans` directory.
+2. Ask the user to approve or revise the plan.
+3. On revision, update `<issue_description>` and repeat planning.
+4. On confirmation, integrate into `<PLAN>` and proceed to Features Workflow.
 
 ## Implementation Workflow
-
-Incorporate the following steps into the `<PLAN>` as a top level item called 'Implementation'
-
-1. Add steps to the implementation plan item in `<PLAN>` that comprehensively describes the steps to alter the source code in the repo to resolve `<issue_description>` according to the plan and features, such that the acceptance criteria are met.
-2. Iteratively follow the steps in the implementation plan until all are complete.  Work sequentially.
-3. Ask the user to review and confirm or revise the implementation
-4. If the user provides revisions, incorporate those into the `<issue_description>` and continue implementation from step 1
-5. If the user confirms the implementation, continue with the test workflow
-
-## Test Workflow
-
-Incorporate the following steps into the `<PLAN>` as a top level item called 'Test'
-
-1. Ask the user if they wish to test the implementation.
-2. If the user declines testing, continue with the Checkpoint workflow
-3. If the user approves testing
-    1. Update steps in the test plan item in the `<PLAN>` that describes any outstanding or failing tests
-    2. If there are failing tests use context7 to retrieve documentation for technologies used to aid in the resolution of failing tests
-    3. Consider amendments to the test code or implementation, but do not alter the features other than to clarify or otherwise improve the DSL.  Maintain the intent of the features.
-    4. Ask the user for additional input if there are tests that are problematic to resolve (for example, mark the tests as pending rather than removing or faking a pass)
-    5. If the user declines or aborts testing, continue with the checkpoint workflow
-    6. When there are no failing tests, continue with the checkpoint workflow
-4. Repeat the test workflow whilst failing tests remain
-
-## Checkpoint Workflow
-
-Incorporate the following steps into the `<PLAN>` as a top level item called 'Checkpoint'
-
-1. Ask the user if the uncommitted changes should be committed to VCS
-2. If the user reports a problem or provides a revision, address the new concern and continue with step 1 of the Test Workflow
-3. If the user declines, end the workflow
-4. If the user confirms, stage the changes, commit the changes with a commit message that adheres to the Commit Message Format, and end the workflow
+Add the following to `<PLAN>` as 'Implementation':
+1. Detail clear, stepwise procedures to alter the repo's source code, following the plan and acceptance criteria.
+2. Complete implementation steps sequentially.
+3. Ask user for implementation confirmation or revision. On revision, update `<issue_description>` and repeat; on confirmation, proceed to testing/building.
 
 # Plans Directory
+- Store plans in `<project_root>/plans`.
+- Create plans as `YYYY-MM-DDTHH-mm-<short_summary>.md` with a succinct problem description.
 
-- Use `<project_root>/plans`
-- Create a plan in markdown format whose name is formed from the current date in YYYY-MM-DDTHH-mm format, plus a terse summarization of the `<issue_description>`, with `.md` extension
+# Codebase Review
+- Search all files, excluding `.idea` and `.git`.
 
-# Commit Message Format
-
-- Create a concise title that describes the nature of the change
-- Leave a blank line, and then describe the changes, using bullet points for multiple changes.
-- Avoid overly verbose descriptions or unnecessary details.
-
-# Reviewing the codebase
-
-- Search for all files including dot directories, but excluding the following:
-    - .idea directory
-    - .git directory
-
-# Ask the user
-
+# User Confirmation
 - Use the `ask_user` tool
-- Provide the message in multiline plain text format
+- Provide multi-line, plain-text messages
+
+After each tool call or code edit, validate result in 1-2 lines and proceed or self-correct if validation fails.
+
+make tool calls terse and final output fully detailed as appropriate.
+
+Attempt a first pass autonomously unless missing critical info; stop and ask for clarification if success criteria are not met or conflicts exceed a reasonable threshold.
