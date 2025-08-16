@@ -104,5 +104,9 @@
 
         <!-- Caret-based usage highlighting for function calls and declarations -->
         <highlightUsagesHandlerFactory implementation="is.yarr.clips.highlight.CLIPSHighlightUsagesHandlerFactory"/>
+
+        <lang.elementManipulator
+                forClass="is.yarr.clips.psi.leaf.CLIPSIdentifierLeaf"
+                implementationClass="is.yarr.clips.psi.manipulators.CLIPSIdentifierManipulator"/>
     </extensions>
 </idea-plugin>

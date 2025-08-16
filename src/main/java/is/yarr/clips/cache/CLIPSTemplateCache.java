@@ -6,7 +6,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import is.yarr.clips.psi.CLIPSDefaultAttribute;
 import is.yarr.clips.psi.CLIPSDeftemplateConstruct;
@@ -33,8 +32,10 @@ public final class CLIPSTemplateCache {
                 CACHED_TEMPLATES_KEY,
                 () -> {
                     Map<String, TemplateInfo> map = buildTemplatesForFile(file);
-                    // Invalidate on any PSI modification in the project; or use a finer-grained tracker if available
-                    return CachedValueProvider.Result.create(map, PsiModificationTracker.getInstance(file.getProject()).getModificationCount());
+                    // Invalidate when this file's PSI changes
+                    return CachedValueProvider.Result.create(map, file);
+                    // If you need project-wide invalidation instead, use:
+                    // return CachedValueProvider.Result.create(map, PsiModificationTracker.MODIFICATION_COUNT);
                 },
                 false
         );

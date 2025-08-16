@@ -4,7 +4,9 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.IncorrectOperationException;
 import is.yarr.clips.psi.*;
+import is.yarr.clips.psi.leaf.CLIPSIdentifierLeaf;
 import org.jetbrains.annotations.NotNull;
+
 import static is.yarr.clips.psi.CLIPSTypes.*;
 
 /**
@@ -12,7 +14,7 @@ import static is.yarr.clips.psi.CLIPSTypes.*;
  * This class implements methods referenced in the BNF file.
  */
 public class CLIPSPsiImplUtil {
-    
+
     /**
      * Gets the name of a variable element.
      * Removes the '?' prefix from the variable name.
@@ -24,7 +26,7 @@ public class CLIPSPsiImplUtil {
         }
         return text;
     }
-    
+
     /**
      * Gets the name of a global variable.
      * Removes the '?*' prefix and '*' suffix from the global variable name.
@@ -36,7 +38,7 @@ public class CLIPSPsiImplUtil {
         }
         return text;
     }
-    
+
     /**
      * Gets the name of a multifield variable.
      * Removes the '$?' prefix from the multifield variable name.
@@ -48,21 +50,17 @@ public class CLIPSPsiImplUtil {
         }
         return text;
     }
-    
-    
+
+
     /**
      * Gets the name of a variable element.
      * This method is referenced in the BNF file.
      */
     public static String getName(CLIPSVariableElement element) {
         String name = getVariableName(element);
-//        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getName(CLIPSVariableElement): element=" + element +
-//                          ", class=" + element.getClass().getName() +
-//                          ", text='" + element.getText() + "'" +
-//                          ", name='" + name + "'");
         return name;
     }
-    
+
     /**
      * Sets the name of a variable element.
      * This method is referenced in the BNF file.
@@ -72,7 +70,7 @@ public class CLIPSPsiImplUtil {
         // In a real implementation, we would create a new variable element with the new name
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a variable element.
      * This method is referenced in the BNF file.
@@ -81,12 +79,9 @@ public class CLIPSPsiImplUtil {
         var node = element.getNode();
         var child = node.findChildByType(VARIABLE);
         var result = child != null ? child.getPsi() : (PsiElement) element;
-//        System.out.println("[DEBUG_LOG] CLIPSPsiImplUtil.getNameIdentifier(CLIPSVariableElement): element=" + element +
-//                          ", childType=" + (child != null ? child.getElementType() : null) +
-//                          ", resultText='" + result.getText() + "'");
         return result;
     }
-    
+
     /**
      * Gets the name of a global variable.
      * This method is referenced in the BNF file.
@@ -96,7 +91,7 @@ public class CLIPSPsiImplUtil {
         PsiElement globalVar = node.getPsi();
         return getGlobalVariableName(globalVar);
     }
-    
+
     /**
      * Sets the name of a global variable.
      * This method is referenced in the BNF file.
@@ -105,7 +100,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a global variable.
      * This method is referenced in the BNF file.
@@ -114,7 +109,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(GLOBAL_VARIABLE);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a template name.
      * This method is referenced in the BNF file.
@@ -122,16 +117,24 @@ public class CLIPSPsiImplUtil {
     public static String getName(CLIPSTemplateName element) {
         return element.getText();
     }
-    
+
     /**
      * Sets the name of a template name.
      * This method is referenced in the BNF file.
      */
     public static PsiElement setName(CLIPSTemplateName element, @NotNull String name) throws IncorrectOperationException {
-        // This is a simplified implementation
-        throw new IncorrectOperationException("Rename not implemented");
+        PsiElement id = getNameIdentifier(element);
+        if (id == null) return element;
+
+        try {
+            if (id instanceof CLIPSIdentifierLeaf leaf) {
+                leaf.replaceWithText(name);
+            }
+        } catch (Throwable ignored) {}
+
+        return element;
     }
-    
+
     /**
      * Gets the name identifier of a template name.
      * This method is referenced in the BNF file.
@@ -140,7 +143,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(IDENTIFIER);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a slot name.
      * This method is referenced in the BNF file.
@@ -148,7 +151,7 @@ public class CLIPSPsiImplUtil {
     public static String getName(CLIPSSlotName element) {
         return element.getText();
     }
-    
+
     /**
      * Sets the name of a slot name.
      * This method is referenced in the BNF file.
@@ -157,7 +160,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a slot name.
      * This method is referenced in the BNF file.
@@ -166,7 +169,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(IDENTIFIER);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a parameter.
      * This method is referenced in the BNF file.
@@ -174,7 +177,7 @@ public class CLIPSPsiImplUtil {
     public static String getName(CLIPSParameter element) {
         return getVariableName(element);
     }
-    
+
     /**
      * Sets the name of a parameter.
      * This method is referenced in the BNF file.
@@ -183,7 +186,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a parameter.
      * This method is referenced in the BNF file.
@@ -192,7 +195,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(VARIABLE);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a class name.
      * This method is referenced in the BNF file.
@@ -200,7 +203,7 @@ public class CLIPSPsiImplUtil {
     public static String getName(CLIPSClassName element) {
         return element.getText();
     }
-    
+
     /**
      * Sets the name of a class name.
      * This method is referenced in the BNF file.
@@ -209,7 +212,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a class name.
      * This method is referenced in the BNF file.
@@ -218,7 +221,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(IDENTIFIER);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a deffacts name.
      * This method is referenced in the BNF file.
@@ -226,7 +229,7 @@ public class CLIPSPsiImplUtil {
     public static String getName(CLIPSDeffactsName element) {
         return element.getText();
     }
-    
+
     /**
      * Sets the name of a deffacts name.
      * This method is referenced in the BNF file.
@@ -235,7 +238,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a deffacts name.
      * This method is referenced in the BNF file.
@@ -244,7 +247,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(IDENTIFIER);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a module name.
      * This method is referenced in the BNF file.
@@ -252,7 +255,7 @@ public class CLIPSPsiImplUtil {
     public static String getName(CLIPSModuleName element) {
         return element.getText();
     }
-    
+
     /**
      * Sets the name of a module name.
      * This method is referenced in the BNF file.
@@ -261,7 +264,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a module name.
      * This method is referenced in the BNF file.
@@ -270,7 +273,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(IDENTIFIER);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a rule name.
      * This method is referenced in the BNF file.
@@ -278,7 +281,7 @@ public class CLIPSPsiImplUtil {
     public static String getName(CLIPSRuleName element) {
         return element.getText();
     }
-    
+
     /**
      * Sets the name of a rule name.
      * This method is referenced in the BNF file.
@@ -287,7 +290,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a rule name.
      * This method is referenced in the BNF file.
@@ -318,7 +321,7 @@ public class CLIPSPsiImplUtil {
         var child = element.getNode().findChildByType(IDENTIFIER);
         return child != null ? child.getPsi() : element;
     }
-    
+
     /**
      * Gets the name of a multifield variable element.
      * Removes the '$?' prefix from the multifield variable name.
@@ -328,7 +331,7 @@ public class CLIPSPsiImplUtil {
         PsiElement multifieldVar = element.getMultifieldVariable();
         return getMultifieldVariableName(multifieldVar);
     }
-    
+
     /**
      * Sets the name of a multifield variable element.
      * This method is referenced in the BNF file.
@@ -337,7 +340,7 @@ public class CLIPSPsiImplUtil {
         // This is a simplified implementation
         throw new IncorrectOperationException("Rename not implemented");
     }
-    
+
     /**
      * Gets the name identifier of a multifield variable element.
      * This method is referenced in the BNF file.
@@ -345,7 +348,7 @@ public class CLIPSPsiImplUtil {
     public static PsiElement getNameIdentifier(CLIPSMultifieldVariableElement element) {
         return element.getMultifieldVariable();
     }
-    
+
     // Methods for CLIPSMultifieldVariable and CLIPSMultifieldVar have been removed
     // as they are no longer needed after the regeneration of the parser and lexer classes.
 }
