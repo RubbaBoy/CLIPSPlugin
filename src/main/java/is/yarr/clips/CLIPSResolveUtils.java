@@ -159,8 +159,6 @@ public class CLIPSResolveUtils {
 
         }
 
-        System.out.println("elements = " + elements);
-
         return elements;
     }
 

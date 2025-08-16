@@ -18,6 +18,8 @@ public class CLIPSColorSettingsPage implements ColorSettingsPage {
     private static final AttributesDescriptor[] DESCRIPTORS = new AttributesDescriptor[]{
             new AttributesDescriptor("Keyword", CLIPSSyntaxHighlighter.KEYWORD),
             new AttributesDescriptor("Built-in function", CLIPSSyntaxHighlighter.BUILTIN_FUNCTION),
+            new AttributesDescriptor("User function call", CLIPSSyntaxHighlighter.USER_FUNCTION_CALL),
+            new AttributesDescriptor("Template call", CLIPSSyntaxHighlighter.TEMPLATE_CALL),
             new AttributesDescriptor("Variable", CLIPSSyntaxHighlighter.VARIABLE),
             new AttributesDescriptor("Global variable", CLIPSSyntaxHighlighter.GLOBAL_VARIABLE),
             new AttributesDescriptor("Multifield variable", CLIPSSyntaxHighlighter.MULTIFIELD_VARIABLE),
@@ -27,7 +29,7 @@ public class CLIPSColorSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Identifier", CLIPSSyntaxHighlighter.IDENTIFIER),
             new AttributesDescriptor("Parentheses", CLIPSSyntaxHighlighter.PARENTHESES),
             new AttributesDescriptor("Operator", CLIPSSyntaxHighlighter.OPERATOR),
-            new AttributesDescriptor("Bad character", CLIPSSyntaxHighlighter.BAD_CHARACTER)
+            new AttributesDescriptor("Bad character", CLIPSSyntaxHighlighter.BAD_CHARACTER),
     };
 
     @Nullable
@@ -54,6 +56,8 @@ public class CLIPSColorSettingsPage implements ColorSettingsPage {
                  (multislot hobbies)
                )
                
+               (deffunction foo (?x) (return ?x))
+               
                (defglobal
                  ?*max-age* = 100
                  ?*min-age* = 0
@@ -77,6 +81,8 @@ public class CLIPSColorSettingsPage implements ColorSettingsPage {
                (assert (person (name "Jane") (age 25) (hobbies "painting" "music")))
                (assert (person (name "Bob") (age 10) (hobbies "games" "sports")))
                
+               (printout t (foo 1) crlf)
+               (assert (person (name "Zed") (age 42)))
                (run)
                """;
     }

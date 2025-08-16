@@ -37,7 +37,10 @@
             fieldName="INSTANCE"
             language="CLIPS"
             extensions="clp"/>
-            
+
+        <additionalTextAttributes scheme="Default" file="colorSchemes/CLIPS_Default.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/CLIPS_Darcula.xml"/>
+
         <lang.parserDefinition
             language="CLIPS"
             implementationClass="is.yarr.clips.CLIPSParserDefinition"/>
@@ -49,10 +52,8 @@
         <colorSettingsPage
             implementation="is.yarr.clips.CLIPSColorSettingsPage"/>
             
-<!--        <annotator-->
-<!--            language="CLIPS"-->
-<!--            implementationClass="is.yarr.clips.CLIPSAnnotator"/>-->
-            
+        <annotator language="CLIPS" implementationClass="is.yarr.clips.annotators.CLIPSCallHeadAnnotator"/>
+
         <completion.contributor
             language="CLIPS"
             implementationClass="is.yarr.clips.completion.CLIPSCompletionContributor"/>

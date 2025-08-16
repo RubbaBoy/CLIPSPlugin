@@ -22,7 +22,7 @@ import java.util.List;
 public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private final String name;
     private final ReferenceType type;
-    private final boolean functionDef;
+    private final boolean isAmbiguous;
 
     /**
      * Enum to distinguish between different types of references.
@@ -56,13 +56,11 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
      * @param name The name of the referenced element
      * @param type The type of the reference
      */
-    public CLIPSReference(@NotNull PsiElement element, TextRange textRange, String name, ReferenceType type, boolean isFuncDef) {
+    public CLIPSReference(@NotNull PsiElement element, TextRange textRange, String name, ReferenceType type, boolean isAmbiguous) {
         super(element, textRange);
         this.name = name;
         this.type = type;
-        this.functionDef = isFuncDef;
-        System.out.println("[DEBUG_LOG] Created CLIPSReference: element=" + element + ", textRange=" + textRange + ", name=" + name + ", type=" + type);
-        System.out.println("[DEBUG_LOG] Element text: " + element.getText() + ", textRange text: " + element.getText().substring(textRange.getStartOffset(), textRange.getEndOffset()));
+        this.isAmbiguous = isAmbiguous;
     }
 
     /**
@@ -74,14 +72,6 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
      */
     @Override
     public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
-        if (functionDef) {
-            System.out.println("CLIPSReference.multiResolve FUNCTION DEF: element=" + myElement + ", name=" + name + ", type=" + type);
-        }
-        System.out.println("[DEBUG_LOG] multiResolve called for: element=" + myElement + ", name=" + name + ", type=" + type);
-        System.out.println("[DEBUG_LOG] multiResolve element class: " + myElement.getClass().getName());
-        System.out.println("[DEBUG_LOG] multiResolve element text: " + myElement.getText());
-        System.out.println("[DEBUG_LOG] multiResolve textRange: " + getRangeInElement());
-        
         Project project = myElement.getProject();
         List<ResolveResult> results = new ArrayList<>();
         
@@ -94,13 +84,7 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
             case SLOT -> findSlotDeclarations(project, results);
         }
 
-        if (functionDef) {
-            System.out.println("[DEBUG_LOG] FUNC DEF:: multiResolve results: count=" + results.size() + ", results=" + results);
-            for (ResolveResult result : results) {
-                System.out.println("[DEBUG_LOG] multiResolve result: " + result + ", element=" + result.getElement());
-            }
-        }
-        return results.toArray(new ResolveResult[0]);
+        return results.toArray(ResolveResult[]::new);
     }
 
     /**
@@ -131,6 +115,10 @@ public class CLIPSReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     public ReferenceType getType() {
         return type;
+    }
+
+    public boolean isAmbiguous() {
+        return isAmbiguous;
     }
 
     /**

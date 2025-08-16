@@ -123,8 +123,8 @@ public class CLIPSReferenceContributor extends PsiReferenceContributor {
                     if (hasFunction && hasTemplate) {
                         System.out.println("[DEBUG_LOG] IDENTIFIER call head has both function and template definitions: '" + name + "'");
                         return new PsiReference[]{
-                            new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.FUNCTION),
-                            new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.TEMPLATE)
+                            new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.FUNCTION, true),
+                            new CLIPSReference(element, range, name, CLIPSReference.ReferenceType.TEMPLATE, true)
                         };
                     } else if (hasFunction) {
                         System.out.println("[DEBUG_LOG] IDENTIFIER call head resolved as FUNCTION: '" + name + "'");

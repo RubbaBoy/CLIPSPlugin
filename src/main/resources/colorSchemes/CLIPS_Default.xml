@@ -1,0 +1,22 @@
+<scheme name="CLIPS Default (extra)" version="142" parent_scheme="Default">
+    <attributes>
+        <option name="CLIPS_BUILTIN_FUNCTION">
+            <value>
+                <option name="FOREGROUND" value="CC9900"/> <!-- dark yellow -->
+                <option name="FONT_TYPE" value="0"/>
+            </value>
+        </option>
+        <option name="CLIPS_USER_FUNCTION_CALL">
+            <value>
+                <option name="FOREGROUND" value="3A8FFF"/> <!-- blue-ish -->
+                <option name="FONT_TYPE" value="0"/>
+            </value>
+        </option>
+        <option name="CLIPS_TEMPLATE_CALL">
+            <value>
+                <option name="FOREGROUND" value="7FB347"/> <!-- green-ish -->
+                <option name="FONT_TYPE" value="0"/>
+            </value>
+        </option>
+    </attributes>
+</scheme>

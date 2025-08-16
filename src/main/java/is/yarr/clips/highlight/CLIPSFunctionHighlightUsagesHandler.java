@@ -1,4 +1,3 @@
-// Java
 package is.yarr.clips.highlight;
 
 import com.intellij.codeInsight.highlighting.HighlightUsagesHandlerBase;

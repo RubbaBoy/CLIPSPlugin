@@ -1,0 +1,19 @@
+<scheme name="CLIPS Darcula (extra)" version="142" parent_scheme="Darcula">
+    <attributes>
+        <option name="CLIPS_BUILTIN_FUNCTION">
+            <value>
+                <option name="FOREGROUND" value="C8A101"/>
+            </value>
+        </option>
+        <option name="CLIPS_USER_FUNCTION_CALL">
+            <value>
+                <option name="FOREGROUND" value="76B3FF"/>
+            </value>
+        </option>
+        <option name="CLIPS_TEMPLATE_CALL">
+            <value>
+                <option name="FOREGROUND" value="8AD36B"/>
+            </value>
+        </option>
+    </attributes>
+</scheme>

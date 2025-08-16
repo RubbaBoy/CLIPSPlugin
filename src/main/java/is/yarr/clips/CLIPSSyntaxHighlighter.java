@@ -21,7 +21,7 @@ public class CLIPSSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey KEYWORD = 
             createTextAttributesKey("CLIPS_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
     public static final TextAttributesKey BUILTIN_FUNCTION = 
-            createTextAttributesKey("CLIPS_BUILTIN_FUNCTION", DefaultLanguageHighlighterColors.FUNCTION_CALL);
+            createTextAttributesKey("CLIPS_BUILTIN_FUNCTION");
     public static final TextAttributesKey VARIABLE = 
             createTextAttributesKey("CLIPS_VARIABLE", DefaultLanguageHighlighterColors.INSTANCE_FIELD);
     public static final TextAttributesKey GLOBAL_VARIABLE = 
@@ -40,6 +40,13 @@ public class CLIPSSyntaxHighlighter extends SyntaxHighlighterBase {
             createTextAttributesKey("CLIPS_PARENTHESES", DefaultLanguageHighlighterColors.PARENTHESES);
     public static final TextAttributesKey OPERATOR = 
             createTextAttributesKey("CLIPS_OPERATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+
+    // Semantic (Annotator-driven) keys
+    public static final TextAttributesKey USER_FUNCTION_CALL =
+            createTextAttributesKey("CLIPS_USER_FUNCTION_CALL");
+    public static final TextAttributesKey TEMPLATE_CALL =
+            createTextAttributesKey("CLIPS_TEMPLATE_CALL");
+
     public static final TextAttributesKey BAD_CHARACTER = 
             createTextAttributesKey("CLIPS_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER);
 
